@@ -1,11 +1,11 @@
 ---
 name: ai-level-up
-description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, seven skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game" "Recalibrate" or "Dashboard", or asks to level up, track, score or gamify their AI skills.
+description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, seven skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate" or "Dashboard", or asks to level up, track, score or gamify their AI skills.
 ---
 
 # AI Level Up (file-backed)
 
-The game rules live in [references/rules.md](references/rules.md). Read that file in full the first time this skill runs in a session. It is the game. Everything below only covers how to keep the save file.
+The game rules live in [references/rules.md](references/rules.md). Read that file in full the first time this skill runs in a session. It is the game. Everything below covers the save file and the dashboard.
 
 ## Player record
 
