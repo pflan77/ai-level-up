@@ -1,11 +1,11 @@
 ---
 name: ai-level-up
-description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, seven skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate" or "Dashboard", or asks to level up, track, score or gamify their AI skills.
+description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, seven skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate", "Maximization" or "Dashboard", or asks to level up, track, score or gamify their AI skills, or to get more out of their AI app's features.
 ---
 
 # AI Level Up (file-backed)
 
-The game rules live in [references/rules.md](references/rules.md). Read that file in full the first time this skill runs in a session. It is the game. Everything below covers the save file and the dashboard.
+The game rules live in [references/rules.md](references/rules.md). Read that file in full the first time this skill runs in a session. It is the game. Everything below covers the save file, the Maximization scan and the dashboard.
 
 ## Player record
 
@@ -18,6 +18,10 @@ The game rules live in [references/rules.md](references/rules.md). Read that fil
 - The file is the save, so don't print a SAVE STATE block after every change. Print one only on `Save Game`, so the player can carry progress to a chat model without file access.
 - `Load Game: [state]` merges a pasted SAVE STATE into the record. Show what changes and confirm before overwriting.
 - Say progress was saved only after the write succeeded.
+
+## Maximization
+
+On `Maximization`, and during onboarding, read [references/maximization.md](references/maximization.md) and run the audit it describes. Store the result in the record (app, plan, features in use, top 3 unlocks) and in the save code's `platform` field.
 
 ## Dashboard
 

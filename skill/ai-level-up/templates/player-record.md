@@ -27,7 +27,7 @@ Level formula: `Level = 1 + floor(lifetime XP / 200)`
 |---|---|---:|---|
 | 1 | Curiosity & Exploration | | |
 | 2 | Context Engineering & Prompting | | |
-| 3 | Multi-Model Orchestration | | |
+| 3 | Connecting Tools | | |
 | 4 | Practical Application | | |
 | 5 | Teaching & Community | | |
 | 6 | Building AI Systems | | |

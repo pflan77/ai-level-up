@@ -15,6 +15,7 @@ Works with ChatGPT, Claude, Gemini, Grok, Copilot, Llama, Mistral, or any model 
 | File | Use it for |
 |---|---|
 | `AI_LEVEL_UP_PROMPT.md` | **The game.** One prompt for any model. Under 8,000 characters, so it fits a Custom GPT. |
+| `MAXIMIZATION.md` | Optional field guide for the Maximization scan: the 10 feature areas and where they live in each AI app. Add it as a knowledge file for a sharper audit. |
 | `dashboard.html` | Your command center. Open it in any browser, paste your save code, see everything at a glance. |
 | `skill/ai-level-up/` | A Claude skill version that saves your progress to a file automatically. |
 | `ai-level-up-skill.zip` | The same skill, zipped for upload. |
@@ -62,6 +63,7 @@ Paste the prompt as the system prompt or custom instructions. If the model has n
 | `Mission Complete: …` | Submit something you finished. Include a link or specifics. |
 | `Level Up` | What you unlocked and your next real challenge |
 | `Boss Battle` | One ambitious project aimed at your weakest skills |
+| `Maximization` | Scans which features of your AI app you use and gives you the 3 unused ones that would help most |
 | `Dashboard` | Your visual command center (see below) |
 | `Save Game` | Prints your save code |
 | `Load Game: …` | Paste a save code to pick up where you left off |
@@ -91,9 +93,10 @@ Every Status Report opens with a text HUD that works in any chat:
  CALLSIGN  Nova             LVL 6 · BUILDER
  XP        1,130  ██████░░░░  130/200 → LVL 7
  SCORE     6.8 / 10  ▲ 0.4
+ PLATFORM  ChatGPT Plus     █████░░░░░ 5/10
  ─ SKILL TREES ─────────────────────────────────
  Curiosity      ████████░░ 8.2
- Orchestration  █████░░░░░ 5.1
+ Connecting Tools █████░░░ 5.1
  ...
 ╚═══════════════════════════════════════════════╝
 ```
@@ -118,11 +121,34 @@ For the full visual version, type **`Dashboard`**:
 
 1. Curiosity & Exploration
 2. Context Engineering & Prompting
-3. Multi-Model Orchestration
+3. Connecting Tools: getting AI to work with your apps, files and other AI tools
 4. Practical Application
 5. Teaching & Community
 6. Building AI Systems
 7. Execution & Shipping
+
+Not every tree fits everyone on day one. During onboarding, a tree that doesn't apply to you yet is marked **Dormant**. It doesn't count against your score, and it wakes up the first time you show evidence for it.
+
+---
+
+## Maximization
+
+Most people use a fraction of what their AI app can do. Type **`Maximization`** and the game master audits your app and plan across 10 feature areas:
+
+1. Personal context & memory
+2. Workspaces & projects
+3. Reusable assistants
+4. Files & knowledge
+5. Connected apps
+6. Deep research
+7. Creation surfaces (canvas, artifacts, images, video)
+8. Voice & vision
+9. Automation & agents
+10. Code & data
+
+You get a coverage score (for example 5/10) and the 3 unused features that would pay off most for *your* projects. Each comes with a 5-minute setup step and a Daily Quest. Adopting a feature (using it on real work 3 times) earns +50 XP. Get 8 of 10 areas into regular use for the **Full Throttle** badge.
+
+It works in any app. For a more detailed audit, add [`MAXIMIZATION.md`](MAXIMIZATION.md) as a knowledge file. It maps each area to feature names in ChatGPT, Claude, Gemini, Copilot, Grok, Perplexity and local models.
 
 ---
 
