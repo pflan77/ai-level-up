@@ -15,6 +15,7 @@ Works with ChatGPT, Claude, Gemini, Grok, Copilot, Llama, Mistral, or any model 
 | File | Use it for |
 |---|---|
 | `AI_LEVEL_UP_PROMPT.md` | **The game.** One prompt for any model. Under 8,000 characters, so it fits a Custom GPT. |
+| `dashboard.html` | Your command center. Open it in any browser, paste your save code, see everything at a glance. |
 | `skill/ai-level-up/` | A Claude skill version that saves your progress to a file automatically. |
 | `ai-level-up-skill.zip` | The same skill, zipped for upload. |
 
@@ -61,6 +62,7 @@ Paste the prompt as the system prompt or custom instructions. If the model has n
 | `Mission Complete: …` | Submit something you finished. Include a link or specifics. |
 | `Level Up` | What you unlocked and your next real challenge |
 | `Boss Battle` | One ambitious project aimed at your weakest skills |
+| `Dashboard` | Your visual command center (see below) |
 | `Save Game` | Prints your save code |
 | `Load Game: …` | Paste a save code to pick up where you left off |
 | `Recalibrate` | Re-score your skills from evidence (once a month) |
@@ -69,7 +71,7 @@ Paste the prompt as the system prompt or custom instructions. If the model has n
 
 ## Saving your progress
 
-Most chatbots forget between chats. The game handles this with a **save code**: a short `AI_LEVEL_UP_STATE` block it prints whenever your XP, score, quests or badges change.
+Most chatbots forget between chats. The game handles this with a **save code**: a one-line block of JSON it prints whenever your XP, score, quests or badges change.
 
 1. Copy the latest save code into a note (or a file in your ChatGPT/Claude Project).
 2. In a new chat, type `Load Game:` and paste it.
@@ -77,6 +79,30 @@ Most chatbots forget between chats. The game handles this with a **save code**: 
 The save code is plain text, so you can switch models mid-campaign. Start on ChatGPT, then continue on Claude or Gemini.
 
 The Claude skill version saves to a file instead, so you don't need save codes there.
+
+---
+
+## Your command center
+
+Every Status Report opens with a text HUD that works in any chat:
+
+```
+╔═ AI LEVEL UP // COMMAND CENTER ═══════════════╗
+ CALLSIGN  Nova             LVL 6 · BUILDER
+ XP        1,130  ██████░░░░  130/200 → LVL 7
+ SCORE     6.8 / 10  ▲ 0.4
+ ─ SKILL TREES ─────────────────────────────────
+ Curiosity      ████████░░ 8.2
+ Orchestration  █████░░░░░ 5.1
+ ...
+╚═══════════════════════════════════════════════╝
+```
+
+For the full visual version, type **`Dashboard`**:
+
+- **Claude** (Artifacts), **ChatGPT** and **Gemini** (Canvas): the game builds a visual command center right in the chat, with your level ring, XP bar, skill trees, quest cards, badges and score history.
+- **Any model:** open [`dashboard.html`](dashboard.html) in a browser, paste your save code, and click **Open command center**. Try **Try a demo** first to see it. Your save code never leaves your browser.
+- **Claude skill:** the skill fills in the same dashboard with your record and opens it for you.
 
 ---
 
