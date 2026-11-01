@@ -378,7 +378,8 @@
       if (!list.length) return "";
       return '<div class="qgroup"><div class="qlabel">' + qt[1] + "</div>" + list.map(function (q) {
         var total = Math.max(1, num(q.total, 1)), done = clamp(num(q.done), 0, total);
-        var st = q.status || "active";
+        var st = String(q.status || "active").toLowerCase();
+        if (st === "complete" || st === "completed") st = "done";
         return '<div class="quest ' + esc(qt[0]) + " " + esc(st) + '"><div class="qtop"><div><span class="qid">' + esc(q.id) + "</span>" +
           '<span class="qtitle">' + esc(q.title) + "</span></div>" + '<span class="qreward">' + esc(q.reward) + "</span></div>" +
           (q.criteria ? '<div class="qcrit">' + esc(q.criteria) + "</div>" : "") +

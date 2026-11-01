@@ -19,6 +19,7 @@ Works with ChatGPT, Claude, Gemini, Grok, Copilot, Llama, Mistral, or any model 
 | `dashboard.html` | Your command center. Open it in any browser, paste your save code, see everything at a glance. |
 | `skill/ai-level-up/` | A Claude skill version that saves your progress to a file automatically. |
 | `ai-level-up-skill.zip` | The same skill, zipped for upload. |
+| `tests/` | A 10-turn playtest script to check the game in any model, plus an automated version for local models. |
 
 ---
 
