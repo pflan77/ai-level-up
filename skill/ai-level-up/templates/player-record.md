@@ -9,11 +9,13 @@
 | Last evaluation | YYYY-MM-DD |
 | Mirror Test | — / 5 |
 | Power User Score | X.X / 10 (prev —) |
+| Prestige | 0 |
 | Lifetime XP | 0 |
+| Season XP (since last Prestige) | 0 |
 | Level | 1 — Initiate |
-| Next level | Level 2 at 200 XP (0 / 200) |
+| Next level | Level 2 (0 / 200 XP) |
 
-Level formula: `Level = 1 + floor(lifetime XP / 200)`
+Level formula: `Level = 1 + floor(season XP / (200 + 100 × prestige))`
 
 ---
 
@@ -63,6 +65,19 @@ For each tree: **Demonstrated**, **Gap**, **Next unlock**, **Challenge**.
 |---|---|---|---:|---|
 
 ## 6. Achievements
+
+### Milestone counts
+| Track | Count | Rank |
+|---|---:|---|
+| Transmitter (items published) | 0 | — |
+| Questrunner (quests done) | 0 | — |
+| Streak (weeks in a row) | 0 | — |
+| Mentor (people taught) | 0 | — |
+| Force Multiplier (hours saved / week) | 0 | — |
+| Full Throttle (feature areas in use) | 0 | — |
+
+### Rank insignia
+Initiate ◆ · Builder ◇ · Operator ◇ · Systems Architect ◇ · Commander ◇ · Vanguard ◇
 
 ### Earned
 | Badge | Date | Evidence |

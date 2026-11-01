@@ -110,6 +110,20 @@
   .unlocks li::before { content: counter(u); position: absolute; left: 0; top: 7px; width: 18px; height: 18px; border-radius: 50%;
     display: grid; place-items: center; font: 700 10px/1 var(--mono); background: rgba(53, 214, 255, .12); color: var(--accent); }
 
+  /* Milestones + insignia */
+  .tracks { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .track { border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .track-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .track b { font-size: 13px; }
+  .rank { font: 700 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 4px 6px; border-radius: 5px; border: 1px solid currentColor; }
+  .r0 { color: var(--muted); opacity: .7; } .r1 { color: #d08b5b; } .r2 { color: #c3ccd8; } .r3 { color: #f5c542; } .r4 { color: #9fe8ff; text-shadow: 0 0 10px rgba(159, 232, 255, .6); }
+  .track .sub { font: 11px/1.3 var(--mono); color: var(--muted); margin: 6px 0 8px; }
+  .insignia { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .ins { font: 600 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 7px 9px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); opacity: .45; }
+  .ins.on { opacity: 1; color: var(--accent); border-color: rgba(53, 214, 255, .4); background: rgba(53, 214, 255, .06); }
+  .ins.prestige.on { color: #f5c542; border-color: rgba(245, 197, 66, .45); background: rgba(245, 197, 66, .07); }
+  .stars { color: #f5c542; margin-left: 6px; letter-spacing: .1em; }
+
   /* Badges */
   .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
   .badge { border: 1px solid var(--line); border-radius: 10px; padding: 12px 10px; text-align: center; }
@@ -174,14 +188,21 @@
     ["application", "Application"], ["teaching", "Teaching"], ["systems", "Systems"], ["shipping", "Shipping"]
   ];
   var BADGES = [
-    ["First Contact", "First quest done"], ["First Transmission", "First AI work published"],
-    ["Scout", "Kept or killed a tool"], ["Mirror Match", "5/5 Mirror Test"],
-    ["Fact Checker", "Caught an AI error"], ["Workflow Engineer", "First tested workflow"],
-    ["Connected", "AI in a daily tool, 1 week"], ["Full Throttle", "8 of 10 feature areas"],
-    ["Systems Architect", "Reliable connected system"],
-    ["Force Multiplier", "Documented gain"], ["Signal Amplifier", "Taught others, outcomes"],
-    ["Steady Signal", "4 weeks consistent"], ["Boss Slayer", "First boss defeated"]
+    ["First Contact", "First quest done"], ["Scout", "Kept or killed a tool"],
+    ["Mirror Match", "5/5 Mirror Test"], ["Fact Checker", "Caught an AI error"],
+    ["Workflow Engineer", "First tested workflow"], ["Connected", "AI in a daily tool, 1 week"],
+    ["Systems Architect", "Reliable connected system"], ["Boss Slayer", "First boss defeated"]
   ];
+  var TRACKS = [
+    ["published", "Transmitter", "items published", [1, 10, 50, 100]],
+    ["quests", "Questrunner", "quests done", [10, 50, 150, 500]],
+    ["streak", "Streak", "weeks in a row", [4, 12, 26, 52]],
+    ["taught", "Mentor", "people taught", [1, 10, 50, 250]],
+    ["hours", "Force Multiplier", "hours saved / week", [1, 5, 10, 20]],
+    ["features", "Full Throttle", "feature areas in use", [4, 6, 8, 10]]
+  ];
+  var RANKS = ["Unranked", "Bronze", "Silver", "Gold", "Platinum"];
+  var TIERS = [[1, "Initiate"], [5, "Builder"], [10, "Operator"], [15, "Systems Architect"], [20, "Commander"], [30, "Vanguard"]];
   var QTYPES = [["main", "Main Quests"], ["boss", "Boss Battles"], ["weekly", "Weekly"], ["daily", "Daily"]];
 
   var DEMO = {
@@ -190,9 +211,10 @@
     platform: { app: "ChatGPT", plan: "Plus", in_use: ["Memory", "Projects", "Canvas", "Voice", "File uploads"], available: 10,
       next: ["Connected apps: link Google Drive so research notes are one prompt away", "Tasks: a Monday 8am newsletter ideas briefing", "Custom GPT: turn the house-style prompt into a shareable assistant"] },
     mirror: { score: 3, date: "2026-11-05" },
+    counts: { published: 12, quests: 9, streak: 2, taught: 0, hours: 1, features: 5 },
     badges: [
       { name: "First Contact", date: "2026-11-02", ev: "V", earned: true },
-      { name: "First Transmission", date: "2026-11-03", ev: "V", earned: true },
+      { name: "Fact Checker", date: "2026-11-03", ev: "V", earned: true },
       { name: "Scout", date: "2026-11-06", ev: "R", earned: true }
     ],
     quests: [
@@ -214,6 +236,18 @@
     obstacle: "Connecting Tools is the weakest tree: research notes and drafts still move between apps by copy-paste.",
     next_action: "Write a 5-line handoff spec for MQ2 and run it on tomorrow's research task."
   };
+
+  var ELITE = JSON.parse(JSON.stringify(DEMO));
+  ELITE.player = "Vega"; ELITE.prestige = 2; ELITE.xp = 16840; ELITE.season_xp = 2950; ELITE.score = 9.7; ELITE.prev_score = 9.6;
+  ELITE.trees = { curiosity: 9.8, context: 9.7, connecting: 9.5, judgment: 9.4, application: 9.6, teaching: 9.7, systems: 9.5, shipping: 9.8 };
+  ELITE.mirror = { score: 5, date: "2026-10-20" };
+  ELITE.counts = { published: 214, quests: 388, streak: 61, taught: 140, hours: 14, features: 10 };
+  ELITE.platform.in_use = ["Memory", "Projects", "GPTs", "Files", "Connectors", "Deep research", "Canvas", "Voice", "Agents", "Data"];
+  ELITE.platform.next = [];
+  ELITE.badges = BADGES.map(function (b) { return { name: b[0], date: "2026", ev: "V" }; });
+  ELITE.quests = [{ id: "PM2", type: "boss", title: "Mandate II: The Franchise", criteria: "3 teams run your workflow weekly without you", done: 1, total: 3, reward: "Unlocks Prestige III", status: "active" }];
+  ELITE.obstacle = "Impact still routes through you; two of three teams need a hands-on kickoff.";
+  ELITE.next_action = "Record a 10-minute onboarding walkthrough so team three can start without a live session.";
 
   var app = document.getElementById("app");
 
@@ -280,8 +314,13 @@
 
   function render(s) {
     var xp = Math.max(0, Math.floor(num(s.xp)));
-    var level = 1 + Math.floor(xp / 200);
-    var into = xp % 200;
+    var prestige = Math.max(0, Math.floor(num(s.prestige)));
+    var season = s.season_xp == null ? xp : Math.max(0, Math.floor(num(s.season_xp)));
+    var per = 200 + 100 * prestige;
+    var level = 1 + Math.floor(season / per);
+    var into = season % per;
+    var pct = (into / per) * 100;
+    var stars = prestige ? '<span class="stars" title="Prestige ' + prestige + '">' + (prestige > 5 ? "★×" + prestige : "★★★★★".slice(0, prestige)) + "</span>" : "";
     var score = num(s.score), prev = s.prev_score == null ? null : num(s.prev_score);
     var delta = prev == null ? 0 : Math.round((score - prev) * 10) / 10;
     var dcls = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
@@ -300,6 +339,22 @@
       return '<div class="tree' + (t === weakest ? " weak" : "") + '"><span class="name">' + t[1] + "</span>" +
         bar(v * 10) + '<span class="val">' + v.toFixed(1) + "</span></div>";
     }).join("");
+
+    var counts = s.counts || {};
+    var trackHtml = TRACKS.map(function (t) {
+      var c = Math.max(0, num(counts[t[0]])), th = t[3], r = 0;
+      while (r < 4 && c >= th[r]) r++;
+      var next = r < 4 ? th[r] : null, prev = r ? th[r - 1] : 0;
+      var prog = next == null ? 100 : ((c - prev) / (next - prev)) * 100;
+      return '<div class="track"><div class="track-top"><b>' + t[1] + '</b><span class="rank r' + r + '">' + RANKS[r] + "</span></div>" +
+        '<div class="sub">' + c + " " + t[2] + (next == null ? " · max rank" : " · next " + RANKS[r + 1] + " at " + next) + "</div>" + bar(prog) + "</div>";
+    }).join("");
+    var insHtml = TIERS.map(function (t) {
+      var on = prestige > 0 || level >= t[0];
+      return '<span class="ins' + (on ? " on" : "") + '">' + t[1] + "</span>";
+    }).join("") + (prestige ? Array.apply(null, Array(Math.min(prestige, 10))).map(function (_, k) {
+      return '<span class="ins prestige on">Prestige ' + (k + 1) + "</span>";
+    }).join("") : '<span class="ins prestige">Prestige 1</span>');
 
     var m = s.mirror || {};
     var mScore = clamp(Math.round(num(m.score)), 0, 5);
@@ -353,10 +408,10 @@
       '<span class="stamp">Last eval ' + esc(s.last_eval || "—") + ' &nbsp; <button id="swap" type="button">Load another save</button></span></div>' +
       '<div class="grid">' +
         '<section class="panel s12"><div class="hero">' +
-          '<div class="lvl-ring">' + ring(into / 2) + '<div class="num"><div><span>LEVEL</span><b>' + level + "</b></div></div></div>" +
-          "<div><h1 class=\"callsign\">" + esc(s.player || "Unnamed Pilot") + '</h1><span class="tier">' + tierFor(level) + "</span>" +
-            '<div class="xpline"><div class="xpmeta"><span>' + xp.toLocaleString() + " lifetime XP</span><span>" + into + " / 200 → LVL " + (level + 1) + "</span></div>" +
-            bar(into / 2) + "</div></div>" +
+          '<div class="lvl-ring">' + ring(pct) + '<div class="num"><div><span>LEVEL</span><b>' + level + "</b></div></div></div>" +
+          "<div><h1 class=\"callsign\">" + esc(s.player || "Unnamed Pilot") + '</h1><span class="tier">' + tierFor(level) + "</span>" + stars +
+            '<div class="xpline"><div class="xpmeta"><span>' + (prestige ? season.toLocaleString() + " season XP · " : "") + xp.toLocaleString() + " lifetime XP</span><span>" + into + " / " + per + " → LVL " + (level + 1) + "</span></div>" +
+            bar(pct) + "</div></div>" +
           '<div class="score-box"><div class="eyebrow" style="color:var(--muted)">Power Score</div><div class="score">' + score.toFixed(1) +
             '<small> / 10</small></div><div class="delta ' + dcls + '">' + dtxt + "</div>" + mirrorHtml + "</div>" +
         "</div></section>" +
@@ -369,7 +424,9 @@
         '<section class="panel s7"><h2>Active Operations</h2>' + questHtml + "</section>" +
         '<div class="s5 stack"><section class="panel"><h2>Platform Maximization</h2>' + platHtml + "</section>" +
         '<section class="panel"><h2>Mission Log</h2><ul class="log">' + logHtml + "</ul></section></div>" +
-        '<section class="panel s12"><h2>Achievements · ' + Object.keys(earned).length + " earned</h2><div class=\"badges\">" + badgeHtml + "</div></section>" +
+        '<section class="panel s12"><h2>Rank Insignia</h2><div class="insignia">' + insHtml + "</div>" +
+          "<h2>Milestone Tracks</h2><div class=\"tracks\">" + trackHtml + "</div>" +
+          "<h2>Badges · " + Object.keys(earned).length + " earned</h2><div class=\"badges\">" + badgeHtml + "</div></section>" +
       "</div>" +
       '<p class="foot">AI Level Up · <a href="https://github.com/pflan77/ai-level-up">github.com/pflan77/ai-level-up</a> · Your save code stays in this browser.</p>';
 
@@ -385,6 +442,7 @@
       '<textarea id="code" spellcheck="false" placeholder=\'{"v":1,"player":"...","xp":0, ...}\'>' + esc(prefill) + "</textarea>" +
       '<div class="row"><button class="primary" id="load" type="button">Open command center</button>' +
       '<button id="demo" type="button">Try a demo</button>' +
+      '<button id="elite" type="button">Elite demo (Prestige 2)</button>' +
       (error ? '<span class="err" role="alert">' + esc(error) + "</span>" : "") + "</div></div>";
     document.getElementById("load").onclick = function () {
       var text = document.getElementById("code").value;
@@ -396,6 +454,7 @@
       } catch (e) { showLoader(text, e.message); }
     };
     document.getElementById("demo").onclick = function () { render(DEMO); };
+    document.getElementById("elite").onclick = function () { render(ELITE); };
   }
 
   // Start: embedded state first, then the last save code used in this browser, then the loader.

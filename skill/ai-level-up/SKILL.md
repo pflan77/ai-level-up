@@ -1,6 +1,6 @@
 ---
 name: ai-level-up
-description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, eight skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate", "Maximization", "Mirror Test" or "Dashboard", or asks to level up, track, score or gamify their AI skills, or to get more out of their AI app's features.
+description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, eight skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate", "Maximization", "Mirror Test", "Prestige" or "Dashboard", or asks to level up, track, score or gamify their AI skills, or to get more out of their AI app's features.
 ---
 
 # AI Level Up (file-backed)

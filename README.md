@@ -2,7 +2,7 @@
 
 **Level up how you use AI, and prove it.**
 
-AI Level Up turns any AI chatbot into a game master that tracks your growth from casual AI user to AI systems operator. You earn XP for things you actually finish and ship, level up through six tiers, build eight skill trees, take on quests built around your own projects, and fight boss battles aimed at your weakest skills.
+AI Level Up turns any AI chatbot into a game master that tracks your growth from casual AI user to AI systems operator. You earn XP for things you actually finish and ship, level up through six tiers, build eight skill trees, take on quests built around your own projects, fight boss battles aimed at your weakest skills, earn milestone badges, and keep climbing with Prestige once you max out.
 
 It is built to be hard to cheat. Plans earn nothing, vague claims earn nothing, and your skill score only moves when you show evidence.
 
@@ -69,6 +69,7 @@ Paste the prompt as the system prompt or custom instructions. If the model has n
 | `Save Game` | Prints your save code |
 | `Load Game: …` | Paste a save code to pick up where you left off |
 | `Recalibrate` | Re-score your skills from evidence (once a month) |
+| `Prestige` | Reset your level for a Prestige star once you hit Level 30 with a 9.0+ score (optional) |
 
 ---
 
@@ -105,15 +106,15 @@ Every Status Report opens with a text HUD that works in any chat:
 
 For the full visual version, type **`Dashboard`**:
 
-- **Claude** (Artifacts), **ChatGPT** and **Gemini** (Canvas): the game builds a visual command center right in the chat, with your level ring, XP bar, skill trees, quest cards, badges and score history.
-- **Any model:** open [`dashboard.html`](dashboard.html) in a browser, paste your save code, and click **Open command center**. Try **Try a demo** first to see it. Your save code never leaves your browser.
+- **Claude** (Artifacts), **ChatGPT** and **Gemini** (Canvas): the game builds a visual command center right in the chat, with your level ring, XP bar, skill trees, quest cards, milestone tracks, rank insignia, badges and score history.
+- **Any model:** open [`dashboard.html`](dashboard.html) in a browser, paste your save code, and click **Open command center**. Click **Try a demo** to see a new player, or **Elite demo** to see a Prestige 2 player. Your save code never leaves your browser.
 - **Claude skill:** the skill fills in the same dashboard with your record and opens it for you.
 
 ---
 
 ## How scoring works
 
-- **XP and levels** reward finishing things: 50 XP for a finished piece of work, 100 XP for putting it in front of real people, 150–250 XP for workflows and systems you build and actually run. `Level = 1 + floor(XP / 200)`.
+- **XP and levels** reward finishing things: 50 XP for a finished piece of work, 100 XP for putting it in front of real people, 150–250 XP for workflows and systems you build and actually run. `Level = 1 + floor(XP / 200)` until your first Prestige.
 - **Tiers:** Initiate (1–4) → Builder (5–9) → Operator (10–14) → Systems Architect (15–19) → Commander (20–29) → Vanguard (30+).
 - **Your skill score (0–10)** is separate from XP. It only moves with evidence, never because you leveled up.
 - **Past work counts, but only so much.** At onboarding, accomplishments you describe specifically earn Legacy XP, capped at 800 (Level 5). Everyone still has to earn their way up.
@@ -131,6 +132,39 @@ For the full visual version, type **`Dashboard`**:
 8. Execution & Shipping
 
 Not every tree fits everyone on day one. During onboarding, a tree that doesn't apply to you yet is marked **Dormant**. It doesn't count against your score, and it wakes up the first time you show evidence for it.
+
+---
+
+## Badges
+
+**Milestone tracks** rank up from Bronze to Silver, Gold and Platinum as your counts grow:
+
+| Track | Counts | Bronze | Silver | Gold | Platinum |
+|---|---|---:|---:|---:|---:|
+| Transmitter | Items published | 1 | 10 | 50 | 100 |
+| Questrunner | Quests completed | 10 | 50 | 150 | 500 |
+| Streak | Weeks in a row with your weekly goal met | 4 | 12 | 26 | 52 |
+| Mentor | People taught, with outcomes captured | 1 | 10 | 50 | 250 |
+| Force Multiplier | Documented hours saved per week | 1 | 5 | 10 | 20 |
+| Full Throttle | Feature areas in regular use | 4 | 6 | 8 | 10 |
+
+**One-time badges** mark firsts: First Contact (first quest), Scout (kept or killed a tool, with a written verdict), Mirror Match (5/5 Mirror Test), Fact Checker (caught an AI error before it shipped), Workflow Engineer (first tested, reusable workflow), Connected (AI in a daily tool for a week), Systems Architect (a reliable connected system in use) and Boss Slayer (first Boss Battle won). The game master can also award custom badges for real milestones.
+
+**Rank insignia** are earned for each tier you reach, from Initiate to Vanguard, and for each Prestige rank.
+
+---
+
+## Prestige
+
+For people who reach the top. Prestige unlocks at **Level 30 (Vanguard) with a skill score of 9.0 or higher**. It's optional, and the game never pushes it.
+
+When you type `Prestige`:
+- You gain a Prestige star (★), with no limit on how many.
+- Your level resets to 1. Your lifetime XP, badges and history stay.
+- Each level costs 100 XP more than before: 300 XP per level at Prestige 1, 400 at Prestige 2, and so on.
+- You get a **Mandate**: an elite Boss Battle you must win before you can Prestige again. Mandates are about multiplying your impact through other people and systems, such as three teams running your workflow every week without you.
+
+Above a 9.5 skill score, only impact on others moves the number: people using your systems, people you trained, and hours saved. Playing well yourself isn't enough at that point.
 
 ---
 
@@ -157,7 +191,7 @@ Most people use a fraction of what their AI app can do. Type **`Maximization`** 
 9. Automation & agents
 10. Code & data
 
-You get a coverage score (for example 5/10) and the 3 unused features that would pay off most for *your* projects. Each comes with a 5-minute setup step and a Daily Quest. Adopting a feature (using it on real work 3 times) earns +50 XP. Get 8 of 10 areas into regular use for the **Full Throttle** badge.
+You get a coverage score (for example 5/10) and the 3 unused features that would pay off most for *your* projects. Each comes with a 5-minute setup step and a Daily Quest. Adopting a feature (using it on real work 3 times) earns +50 XP. Areas in regular use count toward the **Full Throttle** milestone track.
 
 It works in any app. For a more detailed audit, add [`MAXIMIZATION.md`](MAXIMIZATION.md) as a knowledge file. It maps each area to feature names in ChatGPT, Claude, Gemini, Copilot, Grok, Perplexity and local models.
 
