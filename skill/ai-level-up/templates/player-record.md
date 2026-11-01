@@ -7,6 +7,7 @@
 | Player | |
 | Started | YYYY-MM-DD |
 | Last evaluation | YYYY-MM-DD |
+| Mirror Test | — / 5 |
 | Power User Score | X.X / 10 (prev —) |
 | Lifetime XP | 0 |
 | Level | 1 — Initiate |
@@ -26,12 +27,13 @@ Level formula: `Level = 1 + floor(lifetime XP / 200)`
 | # | Tree | Score | Read |
 |---|---|---:|---|
 | 1 | Curiosity & Exploration | | |
-| 2 | Context Engineering & Prompting | | |
+| 2 | Context & Personalization | | |
 | 3 | Connecting Tools | | |
-| 4 | Practical Application | | |
-| 5 | Teaching & Community | | |
-| 6 | Building AI Systems | | |
-| 7 | Execution & Shipping | | |
+| 4 | Judgment | | |
+| 5 | Practical Application | | |
+| 6 | Teaching & Community | | |
+| 7 | Building AI Systems | | |
+| 8 | Execution & Shipping | | |
 
 ## 3. Skill trees
 

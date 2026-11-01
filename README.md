@@ -2,7 +2,7 @@
 
 **Level up how you use AI, and prove it.**
 
-AI Level Up turns any AI chatbot into a game master that tracks your growth from casual AI user to AI systems operator. You earn XP for things you actually finish and ship, level up through six tiers, build seven skill trees, take on quests built around your own projects, and fight boss battles aimed at your weakest skills.
+AI Level Up turns any AI chatbot into a game master that tracks your growth from casual AI user to AI systems operator. You earn XP for things you actually finish and ship, level up through six tiers, build eight skill trees, take on quests built around your own projects, and fight boss battles aimed at your weakest skills.
 
 It is built to be hard to cheat. Plans earn nothing, vague claims earn nothing, and your skill score only moves when you show evidence.
 
@@ -63,6 +63,7 @@ Paste the prompt as the system prompt or custom instructions. If the model has n
 | `Mission Complete: …` | Submit something you finished. Include a link or specifics. |
 | `Level Up` | What you unlocked and your next real challenge |
 | `Boss Battle` | One ambitious project aimed at your weakest skills |
+| `Mirror Test` | Checks how well your AI knows you: 5 questions, scored out of 5 |
 | `Maximization` | Scans which features of your AI app you use and gives you the 3 unused ones that would help most |
 | `Dashboard` | Your visual command center (see below) |
 | `Save Game` | Prints your save code |
@@ -94,6 +95,7 @@ Every Status Report opens with a text HUD that works in any chat:
  XP        1,130  ██████░░░░  130/200 → LVL 7
  SCORE     6.8 / 10  ▲ 0.4
  PLATFORM  ChatGPT Plus     █████░░░░░ 5/10
+ MIRROR    3/5
  ─ SKILL TREES ─────────────────────────────────
  Curiosity      ████████░░ 8.2
  Connecting Tools █████░░░ 5.1
@@ -117,17 +119,26 @@ For the full visual version, type **`Dashboard`**:
 - **Past work counts, but only so much.** At onboarding, accomplishments you describe specifically earn Legacy XP, capped at 800 (Level 5). Everyone still has to earn their way up.
 - **Evidence is tagged.** V (verified: a link, file, screenshot or metric) or R (reported: a specific claim). A skill above 8.0 needs at least one verified item.
 
-## The seven skill trees
+## The eight skill trees
 
 1. Curiosity & Exploration
-2. Context Engineering & Prompting
+2. Context & Personalization: the context you give for each task, plus lasting context about who you are
 3. Connecting Tools: getting AI to work with your apps, files and other AI tools
-4. Practical Application
-5. Teaching & Community
-6. Building AI Systems
-7. Execution & Shipping
+4. Judgment: checking AI output, catching errors, knowing when not to use AI, protecting private data
+5. Practical Application
+6. Teaching & Community
+7. Building AI Systems
+8. Execution & Shipping
 
 Not every tree fits everyone on day one. During onboarding, a tree that doesn't apply to you yet is marked **Dormant**. It doesn't count against your score, and it wakes up the first time you show evidence for it.
+
+---
+
+## Mirror Test
+
+How well does your AI actually know you? Type **`Mirror Test`** in a fresh chat. The AI answers 5 questions about you using only what it has saved (memory, custom instructions, project files): your role, audience, goals, voice and style, and current projects. You mark each answer right or wrong.
+
+Your score out of 5 is tracked over time. To raise it, complete the **About Me** quest: a one-page personal context document you can paste into any AI. Score 5/5 for the **Mirror Match** badge.
 
 ---
 
@@ -135,13 +146,13 @@ Not every tree fits everyone on day one. During onboarding, a tree that doesn't 
 
 Most people use a fraction of what their AI app can do. Type **`Maximization`** and the game master audits your app and plan across 10 feature areas:
 
-1. Personal context & memory
-2. Workspaces & projects
-3. Reusable assistants
+1. Customization & memory
+2. Projects & workspaces
+3. Skills, GPTs & Gems
 4. Files & knowledge
-5. Connected apps
+5. Plug-ins & connectors
 6. Deep research
-7. Creation surfaces (canvas, artifacts, images, video)
+7. Creation tools (canvas, artifacts, images, video)
 8. Voice & vision
 9. Automation & agents
 10. Code & data

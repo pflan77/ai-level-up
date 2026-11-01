@@ -12,13 +12,13 @@ Add this file as a knowledge file (in a Custom GPT, Claude Project, Gemini Gem o
 
 | # | Area | What it does for the player | First move |
 |---|---|---|---|
-| 1 | **Personal context & memory** | The AI knows who you are, how you work and how you like answers, without being told each time. | Write custom instructions: your role, audience, preferred format, things to avoid. |
-| 2 | **Workspaces & projects** | Keeps the files, instructions and chats for one project together. | Make one workspace for your most active project and move its files in. |
-| 3 | **Reusable assistants** | A saved assistant for a task you repeat, which others can use too. | Turn your most-used prompt into a custom assistant. |
+| 1 | **Customization & memory** | The AI knows who you are, how you work and how you like answers, without being told each time. | Write custom instructions: your role, audience, preferred format, things to avoid. |
+| 2 | **Projects & workspaces** | Keeps the files, instructions and chats for one project together. | Make one workspace for your most active project and move its files in. |
+| 3 | **Skills, GPTs & Gems** | A saved assistant for a task you repeat, which others can use too. | Turn your most-used prompt into a custom assistant. |
 | 4 | **Files & knowledge** | The AI works from your documents instead of general knowledge. | Upload the 3 documents you reference most. |
-| 5 | **Connected apps** | The AI reads from and acts in your email, calendar, drive and other apps. | Connect one app you open every day. |
+| 5 | **Plug-ins & connectors** | The AI reads from and acts in your email, calendar, drive and other apps. | Connect one app you open every day. |
 | 6 | **Deep research** | Multi-step research with sources, in minutes. | Run one research report on a real decision you face this week. |
-| 7 | **Creation surfaces** | Edit documents and code side by side; generate images, video, slides, files. | Draft your next deliverable in the canvas or artifact view instead of plain chat. |
+| 7 | **Creation tools** | Edit documents and code side by side; generate images, video, slides, files. | Draft your next deliverable in the canvas or artifact view instead of plain chat. |
 | 8 | **Voice & vision** | Talk instead of type; show the AI your camera or screen. | Do your next brainstorm in voice mode, out loud. |
 | 9 | **Automation & agents** | Scheduled tasks, and agents that take actions for you. | Schedule one recurring briefing or check-in. |
 | 10 | **Code & data** | Analyze spreadsheets, run code, build small tools without coding knowledge. | Upload a spreadsheet and ask for the three most useful insights and a chart. |
@@ -122,7 +122,7 @@ Where each area usually lives. These are the feature names as of late 2026; chec
 3. **Score coverage** = In use ÷ available on their plan (for example 6/10, or 5/8 on a free plan).
 4. **Pick the top 3 unused areas by payoff for this player's real projects.** Not by novelty. A podcaster gets more from voice and file features than from code execution.
 5. **For each, give** what it is in one line, why it matters for their project, a 5-minute setup step, and a Daily Quest (+20 XP). Adopting it (3 real uses) pays +50 XP.
-6. **Feed the skill trees.** Connected apps, automation and agents count as evidence for Connecting Tools. Memory, projects and reusable assistants count for Context. An unused feature is never a penalty, only an opportunity.
+6. **Feed the skill trees.** Plug-ins, connectors, automation and agents count as evidence for Connecting Tools. Customization, memory, projects and skills count for Context & Personalization. A Mirror Test after setting up memory shows whether it worked. An unused feature is never a penalty, only an opportunity.
 
 ### Example output
 
@@ -131,9 +131,9 @@ Where each area usually lives. These are the feature names as of late 2026; chec
  COVERAGE  █████░░░░░ 5/10
  IN USE    Memory · Projects · Canvas · Voice · Uploads
  TOP 3 UNLOCKS
- 1. Connected apps → link Google Drive so your client briefs are one prompt away.
+ 1. Plug-ins & connectors → link Google Drive so your client briefs are one prompt away.
     Setup: Settings → Connectors → Google Drive.  D-quest +20 · adopted +50
  2. Tasks → a Monday 8am content-ideas briefing for your newsletter.
- 3. Custom GPT → turn your "rewrite in my voice" prompt into one your VA can use.
+ 3. Skills, GPTs & Gems → a Custom GPT to turn your "rewrite in my voice" prompt into one your VA can use.
 ───────────────────────────────────────────────────
 ```

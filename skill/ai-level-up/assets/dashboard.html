@@ -47,6 +47,7 @@
   .grid { display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
   .s12 { grid-column: span 12; } .s8 { grid-column: span 8; } .s7 { grid-column: span 7; }
   .s6 { grid-column: span 6; } .s5 { grid-column: span 5; } .s4 { grid-column: span 4; }
+  @media (max-width: 640px) { .tree { grid-template-columns: 120px 1fr 58px; } }
   @media (max-width: 860px) { .s8, .s7, .s6, .s5, .s4 { grid-column: span 12; } }
 
   /* Header */
@@ -69,10 +70,12 @@
   .score { font: 700 44px/1 var(--mono); }
   .score small { font-size: 16px; color: var(--muted); font-weight: 500; }
   .delta { font: 600 13px/1 var(--mono); margin-top: 6px; }
+  .mirror { margin-top: 10px; font: 600 11px/1 var(--mono); letter-spacing: .12em; color: var(--muted); }
+  .mirror i { font-style: normal; color: var(--accent); letter-spacing: .2em; margin: 0 6px; }
   .up { color: var(--good); } .down { color: var(--bad); } .flat { color: var(--muted); }
 
   /* Trees */
-  .tree { display: grid; grid-template-columns: 140px 1fr 64px; gap: 12px; align-items: center; padding: 7px 0; }
+  .tree { display: grid; grid-template-columns: 170px 1fr 64px; gap: 12px; align-items: center; padding: 7px 0; }
   .tree .name { font-size: 14px; }
   .tree .val { font: 600 13px/1 var(--mono); text-align: right; }
   .tree.weak .name::after { content: "WEAKEST"; display: block; margin-top: 3px; font: 600 9px/1 var(--mono); letter-spacing: .12em; color: var(--warn); }
@@ -167,12 +170,13 @@
 
   var STORE_KEY = "ai-level-up:save";
   var TREES = [
-    ["curiosity", "Curiosity"], ["context", "Context"], ["connecting", "Connecting Tools"],
+    ["curiosity", "Curiosity"], ["context", "Context & Personalization"], ["connecting", "Connecting Tools"], ["judgment", "Judgment"],
     ["application", "Application"], ["teaching", "Teaching"], ["systems", "Systems"], ["shipping", "Shipping"]
   ];
   var BADGES = [
     ["First Contact", "First quest done"], ["First Transmission", "First AI work published"],
-    ["Scout", "Kept or killed a tool"], ["Workflow Engineer", "First tested workflow"],
+    ["Scout", "Kept or killed a tool"], ["Mirror Match", "5/5 Mirror Test"],
+    ["Fact Checker", "Caught an AI error"], ["Workflow Engineer", "First tested workflow"],
     ["Connected", "AI in a daily tool, 1 week"], ["Full Throttle", "8 of 10 feature areas"],
     ["Systems Architect", "Reliable connected system"],
     ["Force Multiplier", "Documented gain"], ["Signal Amplifier", "Taught others, outcomes"],
@@ -182,9 +186,10 @@
 
   var DEMO = {
     v: 1, player: "Nova", started: "2026-11-01", last_eval: "2026-11-08", score: 6.8, prev_score: 6.4, xp: 1130,
-    trees: { curiosity: 8.2, context: 7.4, connecting: 5.1, application: 6.9, teaching: null, systems: 5.6, shipping: 7.2 },
+    trees: { curiosity: 8.2, context: 7.4, connecting: 5.1, judgment: 6.3, application: 6.9, teaching: null, systems: 5.6, shipping: 7.2 },
     platform: { app: "ChatGPT", plan: "Plus", in_use: ["Memory", "Projects", "Canvas", "Voice", "File uploads"], available: 10,
       next: ["Connected apps: link Google Drive so research notes are one prompt away", "Tasks: a Monday 8am newsletter ideas briefing", "Custom GPT: turn the house-style prompt into a shareable assistant"] },
+    mirror: { score: 3, date: "2026-11-05" },
     badges: [
       { name: "First Contact", date: "2026-11-02", ev: "V", earned: true },
       { name: "First Transmission", date: "2026-11-03", ev: "V", earned: true },
@@ -296,6 +301,12 @@
         bar(v * 10) + '<span class="val">' + v.toFixed(1) + "</span></div>";
     }).join("");
 
+    var m = s.mirror || {};
+    var mScore = clamp(Math.round(num(m.score)), 0, 5);
+    var mirrorHtml = m.date || m.score
+      ? '<div class="mirror">MIRROR TEST<i>' + "◉◉◉◉◉".slice(0, mScore) + "○○○○○".slice(0, 5 - mScore) + "</i>" + mScore + "/5</div>"
+      : '<div class="mirror">MIRROR TEST<i>○○○○○</i>not run</div>';
+
     var p = s.platform || {};
     var inUse = Array.isArray(p.in_use) ? p.in_use : [];
     var avail = Math.max(1, num(p.available, 10));
@@ -347,7 +358,7 @@
             '<div class="xpline"><div class="xpmeta"><span>' + xp.toLocaleString() + " lifetime XP</span><span>" + into + " / 200 → LVL " + (level + 1) + "</span></div>" +
             bar(into / 2) + "</div></div>" +
           '<div class="score-box"><div class="eyebrow" style="color:var(--muted)">Power Score</div><div class="score">' + score.toFixed(1) +
-            '<small> / 10</small></div><div class="delta ' + dcls + '">' + dtxt + "</div></div>" +
+            '<small> / 10</small></div><div class="delta ' + dcls + '">' + dtxt + "</div>" + mirrorHtml + "</div>" +
         "</div></section>" +
         '<section class="panel s7"><h2>Skill Trees</h2>' + treeHtml + "</section>" +
         '<section class="panel s5"><h2>Mission Directive</h2>' +

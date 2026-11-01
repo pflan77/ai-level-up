@@ -1,6 +1,6 @@
 ---
 name: ai-level-up
-description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, seven skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate", "Maximization" or "Dashboard", or asks to level up, track, score or gamify their AI skills, or to get more out of their AI app's features.
+description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, eight skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate", "Maximization", "Mirror Test" or "Dashboard", or asks to level up, track, score or gamify their AI skills, or to get more out of their AI app's features.
 ---
 
 # AI Level Up (file-backed)
@@ -22,6 +22,10 @@ The game rules live in [references/rules.md](references/rules.md). Read that fil
 ## Maximization
 
 On `Maximization`, and during onboarding, read [references/maximization.md](references/maximization.md) and run the audit it describes. Store the result in the record (app, plan, features in use, top 3 unlocks) and in the save code's `platform` field.
+
+## Mirror Test
+
+The player record describes the player, so reading it would make the test meaningless. For `Mirror Test`, answer only from memory, custom instructions and the player's own personal context files (such as an About Me doc or CLAUDE.md), never from `AI_LEVEL_UP.md`. Say which sources you used. Then log the score in the record.
 
 ## Dashboard
 
