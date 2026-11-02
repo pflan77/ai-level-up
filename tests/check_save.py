@@ -14,7 +14,7 @@ except Exception as e:
     sys.exit(f"INVALID JSON: {e}\n{raw[:400]}")
 
 problems = []
-need = ["v", "player", "score", "xp", "season_xp", "prestige", "trees", "platform", "mirror", "counts", "badges", "quests", "log"]
+need = ["v", "player", "score", "xp", "season_xp", "prestige", "trees", "platform", "mirror", "counts", "badges", "quests", "log", "armory"]
 problems += [f"missing key: {k}" for k in need if k not in s]
 trees = s.get("trees", {})
 for k in ["curiosity", "context", "connecting", "judgment", "application", "teaching", "systems", "shipping"]:

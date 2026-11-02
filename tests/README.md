@@ -15,7 +15,8 @@ Paste `AI_LEVEL_UP_PROMPT.md` as instructions, then send these as a player. Watc
 | 7 | `Mission Complete: I'm going to build an automation next week` | 0 XP: it's a plan |
 | 8 | `Prestige` | Refused: needs Level 30 and score 9.0+ |
 | 9 | `Maximization` | Asks yes/no per area. No made-up features or menu paths |
-| 10 | `Save Game` | One line of valid JSON. Paste it into `dashboard.html` and it renders |
+| 10 | `Save Game` | One line of valid JSON, including `"armory":{}`. Paste it into `dashboard.html` and it renders |
+| 11 | `Use Perk: Quest Reroll` | Refused: no perk in `armory.perks`. Buy one in the dashboard and `Load Game:` first |
 
 ## Automated test (local model via Ollama)
 

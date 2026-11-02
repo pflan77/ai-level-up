@@ -1,6 +1,6 @@
 ---
 name: ai-level-up
-description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, eight skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate", "Maximization", "Mirror Test", "Prestige" or "Dashboard", or asks to level up, track, score or gamify their AI skills, or to get more out of their AI app's features.
+description: AI Level Up, an evidence-based RPG that tracks and gamifies a person's growth from AI user to AI systems operator, with XP, levels, eight skill trees, quests, boss battles and badges, saved to a player-record file. Use when the user says "Start" for AI Level Up, "Status Report", "Quest Board", "Mission Complete:", "Level Up", "Boss Battle", "Save Game", "Load Game", "Recalibrate", "Maximization", "Mirror Test", "Prestige", "Use Perk" or "Dashboard", or asks to level up, track, score or gamify their AI skills, or to get more out of their AI app's features.
 ---
 
 # AI Level Up (file-backed)
@@ -17,6 +17,7 @@ The game rules live in [references/rules.md](references/rules.md). Read that fil
 - When a claim can be checked against files the session can read (a finished video, a script, a log), check it and tag the award V. Otherwise tag it R.
 - The file is the save, so don't print a SAVE STATE block after every change. Print one only on `Save Game`, so the player can carry progress to a chat model without file access.
 - `Load Game: [state]` merges a pasted SAVE STATE into the record. Show what changes and confirm before overwriting.
+- Keep the save's `armory` block (gear, credits spent, avatar look) in the record's Armory section exactly as the dashboard wrote it. Never change it yourself, except subtracting a perk on `Use Perk`. A `Load Game` code from the dashboard brings the latest armory.
 - Say progress was saved only after the write succeeded.
 
 ## Maximization
@@ -34,5 +35,7 @@ On `Dashboard`, after onboarding, and on `Level Up`, build the visual command ce
 1. Convert the record to the save-code JSON described in the rules (`SAVE STATE`).
 2. Copy the template and put that JSON between `<script id="ailu-state" type="application/json">` and `</script>`. Escape any `</` in the JSON as `<\/`.
 3. Where the session can write files, save it as `ai-level-up-dashboard.html` next to the record and open it. Where Artifacts are available, publish it as an artifact instead.
+
+The dashboard has Command, Operative and Armory tabs. Gear bought in the Armory stays in that browser until the player sends the new save code back with `Load Game:`, so remind them to do that after shopping.
 
 The text HUD from the rules still opens every Status Report.

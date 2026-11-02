@@ -87,6 +87,14 @@ Initiate ◆ · Builder ◇ · Operator ◇ · Systems Architect ◇ · Commande
 | Badge | Unlock condition |
 |---|---|
 
+## Armory
+
+Written by the dashboard. Copy it unchanged into the save code.
+
+```json
+{}
+```
+
 ## 7. Evidence log for score changes
 
 | Date | Change | Evidence |

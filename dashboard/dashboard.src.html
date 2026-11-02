@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Level Up Command Center</title>
+<meta name="description" content="Paste your AI Level Up save code to see your level, skill matrix, quests and badges, and to gear up your operative.">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #05040a;
+    --panel: #0b0915;
+    --panel-2: #110e1f;
+    --line: #2a2342;
+    --line-2: #3a3058;
+    --text: #ece9f7;
+    --muted: #8d86a8;
+    --cyan: #00f0ff;
+    --mag: #ff2bd6;
+    --acid: #f6ff3b;
+    --good: #5dff9b;
+    --warn: #ffb020;
+    --bad: #ff3b6b;
+    --gold: #ffd84a;
+    --accent: var(--cyan);
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --cut: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(900px 520px at 85% -8%, rgba(255, 43, 214, .14), transparent 60%),
+      radial-gradient(900px 600px at -10% 20%, rgba(0, 240, 255, .10), transparent 60%);
+    color: var(--text);
+    font: 15px/1.5 var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* Neon floor grid and scanlines */
+  .floor { position: fixed; left: -50%; right: -50%; bottom: -10vh; height: 55vh; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(rgba(255, 43, 214, .28) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 43, 214, .28) 1px, transparent 1px);
+    background-size: 64px 64px; transform: perspective(420px) rotateX(62deg); transform-origin: 50% 100%;
+    -webkit-mask-image: linear-gradient(transparent, #000 70%); mask-image: linear-gradient(transparent, #000 70%); opacity: .35;
+    animation: floor 6s linear infinite; }
+  @keyframes floor { to { background-position: 0 64px, 0 0; } }
+  .scan { position: fixed; inset: 0; pointer-events: none; z-index: 50;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 3px); mix-blend-mode: overlay; }
+  .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 16px 56px; }
+
+  .eyebrow { font: 700 11px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--cyan); }
+  h1, h2, h3 { margin: 0; font-weight: 700; }
+
+  /* Ticker */
+  .ticker { position: relative; z-index: 2; overflow: hidden; border-bottom: 1px solid var(--line); background: rgba(5, 4, 10, .85);
+    font: 600 11px/30px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .ticker .run { display: inline-block; padding-left: 100%; animation: tick 60s linear infinite; }
+  .ticker b { color: var(--acid); font-weight: 700; }
+  .ticker i { font-style: normal; color: var(--mag); margin: 0 14px; }
+  @keyframes tick { to { transform: translateX(-100%); } }
+
+  /* Top bar and tabs */
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 0 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .logo { width: 26px; height: 26px; }
+  .brand b { font: 800 14px/1 var(--mono); letter-spacing: .22em; }
+  .brand span { color: var(--mag); }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tab { font: 700 11px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; padding: 10px 14px; cursor: pointer;
+    color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 0;
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+  .tab:hover { color: var(--text); border-color: var(--line-2); }
+  .tab[aria-selected="true"] { color: #05040a; background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 18px rgba(0, 240, 255, .5); }
+  .tab .n { color: var(--mag); margin-left: 6px; }
+  .tab[aria-selected="true"] .n { color: #05040a; }
+
+  /* Panels: cut corners and a neon tab on the top edge */
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .s12 { grid-column: span 12; } .s8 { grid-column: span 8; } .s7 { grid-column: span 7; }
+  .s6 { grid-column: span 6; } .s5 { grid-column: span 5; } .s4 { grid-column: span 4; }
+  @media (max-width: 900px) { .s8, .s7, .s6, .s5, .s4 { grid-column: span 12; } }
+  .panel { position: relative; background: var(--line); padding: 1px;
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut))); }
+  .panel > .in { position: relative; height: 100%; padding: 18px;
+    background: linear-gradient(180deg, rgba(17, 14, 31, .97), rgba(11, 9, 21, .97));
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut))); }
+  .panel::before { content: ""; position: absolute; left: 18px; top: 0; width: 56px; height: 2px; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); z-index: 2; }
+  .panel.hot::before { background: var(--mag); box-shadow: 0 0 10px var(--mag); }
+  .ph { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  .ph h2 { font: 700 11px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .ph h2::before { content: "// "; color: var(--mag); }
+  .ph .meta { font: 600 11px/1 var(--mono); color: var(--muted); letter-spacing: .08em; }
+
+  /* Glitch callsign */
+  .glitch { position: relative; display: inline-block; font: 800 34px/1.05 var(--mono); letter-spacing: .04em; text-transform: uppercase;
+    overflow-wrap: anywhere; text-shadow: 0 0 18px rgba(0, 240, 255, .35); }
+  .glitch::before, .glitch::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; }
+  .glitch::before { color: var(--mag); clip-path: inset(0 0 58% 0); animation: g1 4s infinite steps(1); opacity: .85; }
+  .glitch::after { color: var(--cyan); clip-path: inset(52% 0 0 0); animation: g2 4s infinite steps(1); opacity: .85; }
+  @keyframes g1 { 0%, 90% { transform: none; } 91% { transform: translate(3px, -1px); } 94% { transform: translate(-3px, 1px); } 97% { transform: translate(2px, 0); } }
+  @keyframes g2 { 0%, 90% { transform: none; } 92% { transform: translate(-3px, 1px); } 95% { transform: translate(3px, -1px); } 98% { transform: translate(-1px, 0); } }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: 150px minmax(0, 1fr) 130px 200px; gap: 22px; align-items: center; }
+  @media (max-width: 1000px) { .hero { grid-template-columns: 120px minmax(0, 1fr) 120px; } .hero .scorebox { grid-column: 1 / -1; text-align: left; } }
+  @media (max-width: 620px) { .hero { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; } .hero .ringbox { grid-column: 1; } .hero .scorebox { grid-column: 2; } .score { font-size: 36px; } .glitch { font-size: 24px; } }
+  .hero .av { display: block; width: 100%; filter: drop-shadow(0 0 18px rgba(0, 240, 255, .18)); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tag { font: 700 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; padding: 6px 8px; border: 1px solid var(--line-2); color: var(--muted); }
+  .tag.tier { color: var(--cyan); border-color: rgba(0, 240, 255, .5); background: rgba(0, 240, 255, .07); }
+  .tag.cls { color: var(--mag); border-color: rgba(255, 43, 214, .5); background: rgba(255, 43, 214, .07); }
+  .tag.star { color: var(--gold); border-color: rgba(255, 216, 74, .5); }
+  .xpline { margin-top: 14px; }
+  .xpmeta { display: flex; justify-content: space-between; gap: 8px; font: 12px/1 var(--mono); color: var(--muted); margin-bottom: 7px; flex-wrap: wrap; }
+  .bar { height: 8px; background: #191428; overflow: hidden; clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%); }
+  .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--mag), var(--cyan)); box-shadow: 0 0 12px rgba(0, 240, 255, .55); }
+  .bar.seg > i { background: repeating-linear-gradient(90deg, var(--cyan) 0 10px, transparent 10px 12px); }
+  .ringbox { text-align: center; }
+  .ringbox svg { width: 100%; max-width: 130px; display: block; margin: 0 auto; }
+  .ringlbl { font: 700 10px/1 var(--mono); letter-spacing: .18em; color: var(--muted); margin-top: 6px; }
+  .scorebox { text-align: right; }
+  .kv { font: 700 10px/1 var(--mono); letter-spacing: .18em; color: var(--muted); text-transform: uppercase; }
+  .score { font: 800 46px/1 var(--mono); margin-top: 6px; text-shadow: 0 0 22px rgba(255, 43, 214, .35); }
+  .score small { font-size: 16px; color: var(--muted); font-weight: 500; }
+  .delta { font: 700 12px/1 var(--mono); margin-top: 6px; }
+  .credits { margin-top: 14px; font: 800 20px/1 var(--mono); color: var(--acid); text-shadow: 0 0 14px rgba(246, 255, 59, .4); }
+  .credits small { font-size: 11px; letter-spacing: .16em; color: var(--muted); font-weight: 700; margin-left: 4px; }
+  .mirror { margin-top: 10px; font: 700 10px/1 var(--mono); letter-spacing: .14em; color: var(--muted); }
+  .mirror i { font-style: normal; color: var(--cyan); letter-spacing: .2em; margin: 0 6px; }
+  .up { color: var(--good); } .down { color: var(--bad); } .flat { color: var(--muted); }
+
+  /* Charts */
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .axis text { fill: var(--muted); font: 10px var(--mono); }
+  .axis path, .axis line { stroke: var(--line-2); }
+  .matrix { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: center; }
+  @media (max-width: 620px) { .matrix { grid-template-columns: minmax(0, 1fr); } }
+  .tlist { display: grid; gap: 8px; }
+  .tl { display: grid; grid-template-columns: minmax(0, 1fr) 46px; gap: 4px 10px; align-items: center; }
+  .tl .nm { font-size: 13px; overflow-wrap: anywhere; }
+  .tl .v { font: 700 12px/1 var(--mono); text-align: right; }
+  .tl .bar { grid-column: 1 / -1; height: 5px; }
+  .tl.weak .nm::after { content: " · WEAKEST"; font: 700 9px/1 var(--mono); letter-spacing: .12em; color: var(--warn); }
+  .tl.weak .bar > i { background: linear-gradient(90deg, #b8640c, var(--warn)); box-shadow: 0 0 10px rgba(255, 176, 32, .5); }
+  .tl.top .nm::after { content: " · CLASS"; font: 700 9px/1 var(--mono); letter-spacing: .12em; color: var(--mag); }
+  .tl.dormant .nm, .tl.dormant .v { color: var(--muted); }
+  .tl.dormant .v { font-size: 9px; letter-spacing: .1em; }
+  .tip { position: fixed; z-index: 60; pointer-events: none; padding: 7px 9px; font: 600 11px/1.3 var(--mono); color: var(--text);
+    background: #0b0915; border: 1px solid var(--cyan); box-shadow: 0 0 14px rgba(0, 240, 255, .35); opacity: 0; transition: opacity .12s; max-width: 240px; }
+
+  /* Quests */
+  .qgroup + .qgroup { margin-top: 16px; }
+  .qlabel { font: 700 10px/1 var(--mono); letter-spacing: .18em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .quest { border: 1px solid var(--line); padding: 12px; background: rgba(255, 255, 255, .015); border-left: 2px solid var(--cyan); }
+  .quest + .quest { margin-top: 8px; }
+  .quest.boss { border-left-color: var(--bad); background: rgba(255, 59, 107, .05); }
+  .quest.weekly { border-left-color: var(--mag); }
+  .quest.daily { border-left-color: var(--acid); }
+  .quest.done { opacity: .6; }
+  .quest.locked { opacity: .45; }
+  .qtop { display: flex; gap: 10px; justify-content: space-between; align-items: baseline; }
+  .qid { font: 700 11px/1 var(--mono); color: var(--cyan); margin-right: 8px; }
+  .qtitle { font-weight: 650; }
+  .qreward { font: 700 11px/1.3 var(--mono); color: var(--good); text-align: right; }
+  .qcrit { color: var(--muted); font-size: 13px; margin: 6px 0 8px; }
+  .qprog { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; font: 12px/1 var(--mono); color: var(--muted); }
+
+  /* Platform, log, directive */
+  .stack { display: grid; gap: 16px; align-content: start; }
+  .plat { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: center; }
+  .plat-app { font-weight: 700; font-size: 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip { font: 11px/1 var(--mono); padding: 5px 7px; border: 1px solid var(--line-2); color: var(--muted); }
+  .unlocks { margin: 14px 0 0; padding: 0; list-style: none; counter-reset: u; }
+  .unlocks li { counter-increment: u; position: relative; padding: 7px 0 7px 28px; font-size: 13px; border-top: 1px dashed var(--line); }
+  .unlocks li::before { content: counter(u); position: absolute; left: 0; top: 8px; width: 18px; height: 18px; display: grid; place-items: center;
+    font: 800 10px/1 var(--mono); background: rgba(0, 240, 255, .12); color: var(--cyan); }
+  .directive { border-left: 2px solid var(--cyan); padding-left: 12px; }
+  .directive + .directive { margin-top: 14px; }
+  .directive.obstacle { border-color: var(--warn); }
+  .directive h3 { font: 700 10px/1 var(--mono); letter-spacing: .18em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .log { list-style: none; margin: 0; padding: 0; }
+  .log li { display: grid; grid-template-columns: 82px minmax(0, 1fr) auto; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+  .log li:last-child { border-bottom: 0; }
+  .log .d { font: 12px/1.4 var(--mono); color: var(--muted); }
+  .log .x { font: 700 12px/1.4 var(--mono); color: var(--good); white-space: nowrap; }
+  .ev { font: 700 9px/1 var(--mono); padding: 2px 4px; border: 1px solid var(--line-2); color: var(--muted); margin-left: 6px; vertical-align: 1px; }
+  .empty { color: var(--muted); font-size: 13px; margin: 0; }
+
+  /* Milestones, insignia, badges */
+  .tracks { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .track { border: 1px solid var(--line); padding: 12px; }
+  .track-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .track b { font-size: 13px; }
+  .rank { font: 800 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 4px 6px; border: 1px solid currentColor; }
+  .r0 { color: var(--muted); opacity: .7; } .r1 { color: #e08d58; } .r2 { color: #c9d2e0; } .r3 { color: var(--gold); } .r4 { color: #b8f4ff; text-shadow: 0 0 10px rgba(184, 244, 255, .7); }
+  .track .sub { font: 11px/1.3 var(--mono); color: var(--muted); margin: 6px 0 8px; }
+  .insignia { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .ins { font: 700 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; padding: 7px 9px; border: 1px solid var(--line); color: var(--muted); opacity: .45; }
+  .ins.on { opacity: 1; color: var(--cyan); border-color: rgba(0, 240, 255, .45); background: rgba(0, 240, 255, .06); }
+  .ins.prestige.on { color: var(--gold); border-color: rgba(255, 216, 74, .5); background: rgba(255, 216, 74, .07); }
+  .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .badge { border: 1px solid var(--line); padding: 12px 10px; text-align: center; }
+  .badge .ico { display: block; width: 30px; height: 30px; margin: 0 auto 8px; }
+  .badge b { display: block; font-size: 13px; }
+  .badge span { display: block; font: 11px/1.3 var(--mono); color: var(--muted); margin-top: 4px; }
+  .badge.locked { opacity: .38; filter: grayscale(1); }
+  .sub2 { margin: 18px 0 10px; }
+
+  /* Operative + Armory */
+  .bay { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .bay { grid-template-columns: minmax(0, 1fr); } }
+  .stage { position: sticky; top: 12px; }
+  @media (max-width: 900px) { .stage { position: static; } }
+  .stage .av { display: block; width: 100%; max-width: 320px; margin: 0 auto; }
+  .stage-cap { text-align: center; margin-top: 12px; }
+  .stage-cap .nm { font: 800 18px/1.1 var(--mono); letter-spacing: .06em; text-transform: uppercase; overflow-wrap: anywhere; }
+  .stage-cap .ds { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .slot { border: 1px solid var(--line); padding: 10px; min-height: 64px; }
+  .slot .k { font: 700 9px/1 var(--mono); letter-spacing: .18em; color: var(--muted); text-transform: uppercase; }
+  .slot .v { margin-top: 6px; font-size: 13px; font-weight: 650; }
+  .slot .v.none { color: var(--muted); font-weight: 400; }
+  .look { display: grid; gap: 14px; }
+  .look .k { font: 700 10px/1 var(--mono); letter-spacing: .18em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .sw { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sw button { width: 30px; height: 30px; padding: 0; border: 1px solid var(--line-2); cursor: pointer; border-radius: 0; }
+  .sw button[aria-pressed="true"] { outline: 2px solid var(--cyan); outline-offset: 2px; box-shadow: 0 0 12px rgba(0, 240, 255, .6); }
+  .sw .txt { width: auto; padding: 0 10px; font: 700 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--text); background: transparent; }
+  .classcard { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 12px; align-items: center; border: 1px solid rgba(255, 43, 214, .4); background: rgba(255, 43, 214, .05); padding: 12px; }
+  .classcard svg { width: 48px; height: 48px; }
+  .classcard b { font: 800 14px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--mag); }
+  .classcard p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .filters button { font: 700 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; padding: 8px 10px; cursor: pointer; border-radius: 0;
+    background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .filters button[aria-pressed="true"] { color: var(--mag); border-color: var(--mag); background: rgba(255, 43, 214, .08); }
+  .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .item { position: relative; text-align: left; padding: 0; cursor: pointer; color: var(--text); background: #0d0b18; border: 1px solid var(--line); border-radius: 0; font: inherit; }
+  .item:hover { border-color: var(--line-2); }
+  .item[aria-pressed="true"] { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan), 0 0 18px rgba(0, 240, 255, .25); }
+  .item .th { display: block; width: 100%; aspect-ratio: 5 / 4; overflow: hidden; background: #08060f; }
+  .item .th svg { width: 100%; height: 100%; display: block; }
+  .item .body { display: block; padding: 9px 10px 10px; border-top: 2px solid var(--rc, var(--line)); }
+  .item .nm { display: block; font-size: 13px; font-weight: 650; line-height: 1.25; }
+  .item .rr { display: block; font: 700 9px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--rc, var(--muted)); margin-top: 6px; }
+  .item .st { display: block; font: 700 11px/1 var(--mono); margin-top: 8px; color: var(--acid); }
+  .item .st.own { color: var(--good); } .item .st.lock { color: var(--muted); } .item .st.eq { color: var(--cyan); }
+  .item.locked .th { filter: grayscale(1) brightness(.6); }
+  .rar-common { --rc: #9aa3b8; } .rar-uncommon { --rc: #5dff9b; } .rar-rare { --rc: #00f0ff; } .rar-epic { --rc: #ff2bd6; } .rar-legendary { --rc: #ffd84a; } .rar-earned { --rc: #f6ff3b; }
+  .detail { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 14px; }
+  .detail .nm { font: 800 15px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+  .detail p { margin: 6px 0 12px; color: var(--muted); font-size: 13px; }
+  .perks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .perk { border: 1px solid var(--line); padding: 12px; display: grid; gap: 8px; align-content: start; }
+  .perk b { font: 800 13px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+  .perk p { margin: 0; font-size: 13px; color: var(--muted); }
+  .perk .use { font: 11px/1.4 var(--mono); color: var(--muted); }
+  .perk .use code { color: var(--cyan); }
+  .perk .ct { font: 700 11px/1 var(--mono); color: var(--good); }
+
+  /* Sync bar */
+  .sync { position: sticky; bottom: 12px; z-index: 30; margin-top: 18px; display: none; }
+  .sync.on { display: block; }
+  .sync .in { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: #120c1d; }
+  .sync p { margin: 0; font-size: 13px; }
+  .sync p b { color: var(--acid); }
+  .sync textarea { min-height: 70px; margin-top: 10px; flex-basis: 100%; }
+
+  /* Buttons, inputs, loader */
+  button { font: 700 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 11px 14px; cursor: pointer; border-radius: 0;
+    border: 1px solid var(--line-2); background: var(--panel-2); color: var(--text); }
+  button.primary { background: var(--cyan); border-color: var(--cyan); color: #05040a; box-shadow: 0 0 16px rgba(0, 240, 255, .4); }
+  button.buy { background: var(--acid); border-color: var(--acid); color: #05040a; box-shadow: 0 0 16px rgba(246, 255, 59, .35); }
+  button.hot { background: var(--mag); border-color: var(--mag); color: #05040a; box-shadow: 0 0 16px rgba(255, 43, 214, .4); }
+  button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+  textarea { width: 100%; min-height: 180px; resize: vertical; border: 1px solid var(--line-2); border-radius: 0;
+    background: #08060f; color: var(--text); font: 13px/1.5 var(--mono); padding: 14px; }
+  textarea:focus, button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  .err { color: var(--bad); font-size: 13px; }
+  .ok { color: var(--good); font: 700 11px/1 var(--mono); letter-spacing: .1em; }
+  .loader { max-width: 700px; margin: 7vh auto 0; }
+  .loader h1 { font-size: 32px; margin: 12px 0 8px; }
+  .loader p { color: var(--muted); margin: 0 0 18px; }
+  .foot { margin-top: 28px; text-align: center; font: 11px/1.4 var(--mono); color: var(--muted); }
+  .foot a { color: var(--muted); }
+  .stamp { font: 11px/1 var(--mono); color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Avatar motion */
+  .hover { animation: hover 3.2s ease-in-out infinite; }
+  .orbit { animation: orbit 9s linear infinite; transform-origin: 100px 92px; }
+  .pulse { animation: pulse 2.4s ease-in-out infinite; }
+  .fall { animation: fall 2.6s linear infinite; }
+  .jit { animation: jit 3s steps(1) infinite; }
+  @keyframes hover { 50% { transform: translateY(-5px); } }
+  @keyframes orbit { to { transform: rotate(360deg); } }
+  @keyframes pulse { 50% { opacity: .45; } }
+  @keyframes fall { from { transform: translateY(-240px); } to { transform: translateY(0); } }
+  @keyframes jit { 0%, 85% { transform: none; } 88% { transform: translateX(6px); } 92% { transform: translateX(-4px); } }
+  .still .hover, .still .orbit, .still .pulse, .still .fall, .still .jit { animation: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<!--
+  AI Level Up command center.
+  Paste a save code on the page, or embed one here so the page opens straight to the dashboard:
+  put the save-code JSON between the script tags below.
+-->
+<script id="ailu-state" type="application/json"></script>
+
+<div class="floor" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+<div id="ticker"></div>
+<div class="wrap" id="app"></div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script src="vendor/d3.v7.9.0.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const STORE_KEY = "ai-level-up:save";
+  const TAB_KEY = "ai-level-up:tab";
+  const MOTION = !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  const TREES = [
+    ["curiosity", "Curiosity", "Curiosity"], ["context", "Context & Personalization", "Context"], ["connecting", "Connecting Tools", "Connecting"],
+    ["judgment", "Judgment", "Judgment"], ["application", "Application", "Application"], ["teaching", "Teaching", "Teaching"],
+    ["systems", "Systems", "Systems"], ["shipping", "Shipping", "Shipping"]
+  ];
+  // Class comes from the strongest tree.
+  const CLASSES = {
+    curiosity: ["Scout", "Finds the signal before anyone else does.", "M24 6 L42 24 L24 42 L6 24 Z M24 16 L32 24 L24 32 L16 24 Z"],
+    context: ["Whisperer", "Every model understands exactly what you mean.", "M8 24 Q24 6 40 24 Q24 42 8 24 Z M24 18 A6 6 0 1 0 24.1 18"],
+    connecting: ["Netrunner", "Wires apps and models into one machine.", "M8 12 H22 V24 H40 M8 36 H26 V24 M22 12 A3 3 0 1 0 22.1 12 M40 24 A3 3 0 1 0 40.1 24"],
+    judgment: ["Sentinel", "Nothing false gets past you.", "M24 4 L40 10 V24 Q40 38 24 44 Q8 38 8 24 V10 Z M17 24 L22 29 L32 18"],
+    application: ["Fixer", "Turns AI into results people pay for.", "M10 38 L28 20 M24 10 Q36 6 38 18 L30 26 L22 18 Z M8 40 L14 34"],
+    teaching: ["Mentor", "Your skill multiplies through other people.", "M24 8 L44 18 L24 28 L4 18 Z M12 22 V32 Q24 40 36 32 V22"],
+    systems: ["Technomancer", "Builds systems that run without you.", "M24 6 L39 15 V33 L24 42 L9 33 V15 Z M24 16 L31 20 V28 L24 32 L17 28 V20 Z"],
+    shipping: ["Courier", "Always delivers. On time, in public.", "M6 30 L42 10 L30 42 L24 28 Z M24 28 L42 10"]
+  };
+  const BADGES = [
+    ["First Contact", "First quest done"], ["Scout", "Kept or killed a tool"],
+    ["Mirror Match", "5/5 Mirror Test"], ["Fact Checker", "Caught an AI error"],
+    ["Workflow Engineer", "First tested workflow"], ["Connected", "AI in a daily tool, 1 week"],
+    ["Systems Architect", "Reliable connected system"], ["Boss Slayer", "First boss defeated"]
+  ];
+  const TRACKS = [
+    ["published", "Transmitter", "items published", [1, 10, 50, 100]],
+    ["quests", "Questrunner", "quests done", [10, 50, 150, 500]],
+    ["streak", "Streak", "weeks in a row", [4, 12, 26, 52]],
+    ["taught", "Mentor", "people taught", [1, 10, 50, 250]],
+    ["hours", "Force Multiplier", "hours saved / week", [1, 5, 10, 20]],
+    ["features", "Full Throttle", "feature areas in use", [4, 6, 8, 10]]
+  ];
+  const RANKS = ["Unranked", "Bronze", "Silver", "Gold", "Platinum"];
+  const TIERS = [[1, "Initiate"], [5, "Builder"], [10, "Operator"], [15, "Systems Architect"], [20, "Commander"], [30, "Vanguard"]];
+  const QTYPES = [["main", "Main Quests"], ["boss", "Boss Battles"], ["weekly", "Weekly"], ["daily", "Daily"]];
+
+  // ---------- Armory catalog ----------
+  // Credits = lifetime XP minus armory.spent. Gear is cosmetic. Earned gear can't be bought.
+  const SLOTS = [["head", "Headgear"], ["optics", "Optics"], ["body", "Armor"], ["coat", "Outerwear"], ["ware", "Cyberware"], ["drone", "Companion"], ["aura", "Backdrop"]];
+  const ITEMS = [
+    { id: "h_band", slot: "head", name: "Neon Headband", price: 150, d: "Light strip across the brow. Street classic." },
+    { id: "h_hood", slot: "head", name: "Street Hood", price: 250, d: "Low profile, high signal." },
+    { id: "h_crown", slot: "head", name: "Neural Crown", price: 900, d: "A circlet of sensor nodes. Thinks faster than you blink." },
+    { id: "h_helm", slot: "head", name: "Void Helm", price: 2000, d: "Sealed helmet, T-visor. Nobody sees you coming." },
+    { id: "h_halo", slot: "head", name: "Vanguard Halo", need: { prestige: 1 }, d: "Worn only by those who reset and climbed again." },
+    { id: "o_shades", slot: "optics", name: "Mirrorshades", price: 150, d: "Reflective lenses. Mandatory in the rain." },
+    { id: "o_monocle", slot: "optics", name: "Scan Monocle", price: 400, d: "Reads the room and the fine print." },
+    { id: "o_visor", slot: "optics", name: "HUD Visor", price: 900, d: "Live overlay across both eyes." },
+    { id: "o_trilens", slot: "optics", name: "Tri-Lens Optics", price: 2000, d: "Three lenses per eye. Zoom, thermal, truth." },
+    { id: "o_mirror", slot: "optics", name: "Mirror Lens", need: { badge: "Mirror Match" }, d: "Earned when your AI knows you 5 for 5." },
+    { id: "b_jacket", slot: "body", name: "Synthleather Jacket", price: 150, d: "Neon zip, high collar, zero regrets." },
+    { id: "b_vest", slot: "body", name: "Kevlar Weave Vest", price: 400, d: "Light plating for long nights." },
+    { id: "b_plate", slot: "body", name: "Chrome Plate", price: 900, d: "Polished chest plate and pauldrons." },
+    { id: "b_exo", slot: "body", name: "Exo Frame", price: 2000, d: "Powered armor with a glowing reactor core." },
+    { id: "b_ascend", slot: "body", name: "Ascendant Frame", price: 5000, d: "White-gold armor. The top shelf." },
+    { id: "b_builder", slot: "body", name: "Builder Harness", need: { level: 5 }, d: "Issued when you reach the Builder tier." },
+    { id: "b_operator", slot: "body", name: "Operator Rig", need: { level: 10 }, d: "Issued when you reach the Operator tier." },
+    { id: "b_commander", slot: "body", name: "Commander Mantle", need: { level: 20 }, d: "Issued when you reach the Commander tier." },
+    { id: "c_duster", slot: "coat", name: "Rain Duster", price: 400, d: "Long coat, high collar." },
+    { id: "c_cape", slot: "coat", name: "Signal Cape", price: 900, d: "Catches wind and light." },
+    { id: "c_holo", slot: "coat", name: "Holo Mantle", price: 2000, d: "A coat made of light." },
+    { id: "w_jack", slot: "ware", name: "Neural Jack", price: 150, d: "Temple port. Plug straight into the net." },
+    { id: "w_tattoo", slot: "ware", name: "Circuit Tattoos", price: 250, d: "Glowing traces on the skin." },
+    { id: "w_jaw", slot: "ware", name: "Chrome Jaw", price: 900, d: "Reinforced lower face." },
+    { id: "w_arm", slot: "ware", name: "Chrome Arm", price: 2000, d: "Full cybernetic arm." },
+    { id: "w_scar", slot: "ware", name: "Slayer Scar", need: { badge: "Boss Slayer" }, d: "Earned by winning your first Boss Battle." },
+    { id: "d_signal", slot: "drone", name: "Signal Drone", need: { track: "published", rank: 1 }, d: "Earned by publishing your first AI-made work." },
+    { id: "d_orb", slot: "drone", name: "Scout Orb", price: 400, d: "Hovers. Watches. Reports." },
+    { id: "d_cat", slot: "drone", name: "Holo Cat", price: 900, d: "Rides your shoulder. Judges your prompts." },
+    { id: "d_tri", slot: "drone", name: "Tri-Drone Swarm", price: 2000, d: "Three drones in orbit." },
+    { id: "x_rain", slot: "aura", name: "Neon Rain", price: 250, d: "It's always raining somewhere in the city." },
+    { id: "x_skyline", slot: "aura", name: "Night Skyline", price: 400, d: "Towers and lit windows behind you." },
+    { id: "x_grid", slot: "aura", name: "Synthgrid", price: 400, d: "A sunset grid to the horizon." },
+    { id: "x_glitch", slot: "aura", name: "Glitch Field", price: 900, d: "Reality tears around you." },
+    { id: "x_storm", slot: "aura", name: "Data Storm", price: 2000, d: "Rings of live data." },
+    { id: "x_ice", slot: "aura", name: "Black ICE", price: 5000, d: "Hex-wall firewall. Untouchable." },
+    { id: "x_plat", slot: "aura", name: "Platinum Field", need: { platinum: true }, d: "Earned by any Platinum milestone track." }
+  ];
+  const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+  const PERKS = [
+    { id: "reroll", name: "Quest Reroll", price: 100, d: "Swap one active Daily or Weekly Quest for a new one." },
+    { id: "overclock", name: "Overclock", price: 250, d: "One extra Daily Quest today. It still needs evidence." },
+    { id: "shield", name: "Streak Shield", price: 300, d: "A rest week doesn't break your Streak." },
+    { id: "recal", name: "Early Recalibrate", price: 500, d: "Recalibrate before the 30 days are up." }
+  ];
+  const SKINS = ["#f6d7c3", "#e8b896", "#c98e6b", "#a26a4a", "#7a4a33", "#4f2f22", "#b9c2d6"];
+  const HAIRS = ["#14111c", "#5a3a22", "#d9c9a3", "#e8e8f0", "#ff2bd6", "#00f0ff", "#f6ff3b", "#7cff6b"];
+  const ACCENTS = ["#00f0ff", "#ff2bd6", "#f6ff3b", "#7cff6b", "#ff8a00", "#a78bff", "#ff3b6b"];
+  const STYLES = [["none", "Shaved"], ["buzz", "Buzz"], ["mohawk", "Mohawk"], ["undercut", "Undercut"], ["long", "Long"]];
+  const DEFAULT_LOOK = { skin: 1, hair: "undercut", hair_color: 0, accent: 0 };
+
+  function rarity(it) {
+    if (it.need) return "earned";
+    if (it.price >= 5000) return "legendary";
+    if (it.price >= 2000) return "epic";
+    if (it.price >= 900) return "rare";
+    if (it.price >= 400) return "uncommon";
+    return "common";
+  }
+  function needText(n) {
+    if (n.level) return "Reach Level " + n.level;
+    if (n.prestige) return "Reach Prestige " + n.prestige;
+    if (n.badge) return "Earn " + n.badge;
+    if (n.track) return "Transmitter Bronze";
+    if (n.platinum) return "Any Platinum track";
+    return "Locked";
+  }
+
+  // ---------- Demo players ----------
+  const DEMO = {
+    v: 2, player: "Nova", started: "2026-11-01", last_eval: "2026-11-08", score: 6.8, prev_score: 6.4, xp: 1130, season_xp: 1130, prestige: 0,
+    trees: { curiosity: 8.2, context: 7.4, connecting: 5.1, judgment: 6.3, application: 6.9, teaching: null, systems: 5.6, shipping: 7.2 },
+    platform: { app: "ChatGPT", plan: "Plus", in_use: ["Memory", "Projects", "Canvas", "Voice", "File uploads"], available: 10,
+      next: ["Connected apps: link Google Drive so research notes are one prompt away", "Tasks: a Monday 8am newsletter ideas briefing", "Custom GPT: turn the house-style prompt into a shareable assistant"] },
+    mirror: { score: 3, date: "2026-11-05" },
+    counts: { published: 12, quests: 9, streak: 2, taught: 0, hours: 1, features: 5 },
+    badges: [{ name: "First Contact", date: "2026-11-02", ev: "V" }, { name: "Fact Checker", date: "2026-11-03", ev: "V" }, { name: "Scout", date: "2026-11-06", ev: "R" }],
+    quests: [
+      { id: "MQ1", type: "main", title: "Launch the newsletter", criteria: "4 issues sent to real subscribers", done: 2, total: 4, reward: "+100 XP per issue", status: "active" },
+      { id: "MQ2", type: "main", title: "Two-model research workflow", criteria: "Written handoff, used on 5 tasks in 7 days", done: 1, total: 5, reward: "+150 / +200 XP", status: "active" },
+      { id: "BB1", type: "boss", title: "The Autonomous Inbox", criteria: "Triage system in use for a week, time saved logged", done: 0, total: 1, reward: "+250 +200 XP", status: "locked" },
+      { id: "W1", type: "weekly", title: "Ship 3 AI-assisted pieces", criteria: "3 items delivered by Sunday", done: 2, total: 3, reward: "+100 XP", status: "active" },
+      { id: "D1", type: "daily", title: "Turn one prompt into a template", criteria: "Saved and reused once", done: 0, total: 1, reward: "+20 XP", status: "active" }
+    ],
+    log: [
+      { date: "2026-11-07", id: "MQ1-2", event: "Newsletter issue 2 sent", xp: 100, ev: "V" },
+      { date: "2026-11-06", id: "SC-1", event: "Scout verdict: kept a transcription tool", xp: 20, ev: "R" },
+      { date: "2026-11-03", id: "MQ1-1", event: "Newsletter issue 1 sent", xp: 100, ev: "V" }
+    ],
+    history: [{ date: "2026-11-01", score: 6.4, reason: "Onboarding calibration" }, { date: "2026-11-04", score: 6.6, reason: "First issue shipped" }, { date: "2026-11-08", score: 6.8, reason: "Two issues shipped on schedule" }],
+    obstacle: "Connecting Tools is the weakest tree: research notes and drafts still move between apps by copy-paste.",
+    next_action: "Write a 5-line handoff spec for MQ2 and run it on tomorrow's research task.",
+    armory: { spent: 650, owned: ["b_jacket", "o_shades", "x_skyline"], perks: { reroll: 1 },
+      equipped: { body: "b_jacket", optics: "o_shades", aura: "x_skyline", drone: "d_signal" }, look: { skin: 3, hair: "mohawk", hair_color: 4, accent: 1 } }
+  };
+  const ELITE = JSON.parse(JSON.stringify(DEMO));
+  Object.assign(ELITE, { player: "Vega", prestige: 2, xp: 16840, season_xp: 2950, score: 9.7, prev_score: 9.6,
+    trees: { curiosity: 9.8, context: 9.7, connecting: 9.5, judgment: 9.4, application: 9.6, teaching: 9.7, systems: 9.9, shipping: 9.8 },
+    mirror: { score: 5, date: "2026-10-20" }, counts: { published: 214, quests: 388, streak: 61, taught: 140, hours: 14, features: 10 },
+    badges: BADGES.map(b => ({ name: b[0], date: "2026", ev: "V" })),
+    quests: [{ id: "PM2", type: "boss", title: "Mandate II: The Franchise", criteria: "3 teams run your workflow weekly without you", done: 1, total: 3, reward: "Unlocks Prestige III", status: "active" }],
+    history: [{ date: "2026-06-01", score: 9.2, reason: "Prestige I" }, { date: "2026-08-01", score: 9.5, reason: "Mentor Gold" }, { date: "2026-10-01", score: 9.6, reason: "Prestige II" }, { date: "2026-11-08", score: 9.7, reason: "Two teams self-running" }],
+    obstacle: "Impact still routes through you; two of three teams need a hands-on kickoff.",
+    next_action: "Record a 10-minute onboarding walkthrough so team three can start without a live session.",
+    armory: { spent: 9050, owned: ["b_ascend", "c_holo", "x_ice", "d_tri", "w_arm", "o_trilens"], perks: { shield: 2, recal: 1 },
+      equipped: { head: "h_halo", body: "b_ascend", coat: "c_holo", aura: "x_ice", drone: "d_tri", ware: "w_arm", optics: "o_trilens" },
+      look: { skin: 6, hair: "long", hair_color: 3, accent: 2 } } });
+  ELITE.platform.in_use = ["Memory", "Projects", "GPTs", "Files", "Connectors", "Deep research", "Canvas", "Voice", "Agents", "Data"];
+  ELITE.platform.next = [];
+
+  // ---------- Helpers ----------
+  const app = document.getElementById("app");
+  const tip = document.getElementById("tip");
+  let S = null, view = "command", filter = "all", preview = null, dirty = false, uid = 0;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function num(v, d) { const n = Number(v); return isFinite(n) ? n : (d || 0); }
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function store(key, val) {
+    try {
+      if (val === undefined) return localStorage.getItem(key);
+      if (val === null) localStorage.removeItem(key); else localStorage.setItem(key, val);
+    } catch (e) { /* storage unavailable: page still works */ }
+    return null;
+  }
+  function tierFor(level) { let t = "Initiate"; TIERS.forEach(x => { if (level >= x[0]) t = x[1]; }); return t; }
+  function bar(pct, cls) { return '<div class="bar' + (cls ? " " + cls : "") + '"><i style="width:' + clamp(pct, 0, 100).toFixed(1) + '%"></i></div>'; }
+  function panel(cls, title, meta, body) {
+    return '<section class="panel ' + cls + '"><div class="in">' + (title ? '<div class="ph"><h2>' + title + "</h2>" + (meta ? '<span class="meta">' + meta + "</span>" : "") + "</div>" : "") + body + "</div></section>";
+  }
+  function showTip(e, html) {
+    tip.innerHTML = html; tip.style.opacity = 1;
+    const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8);
+    tip.style.left = x + "px"; tip.style.top = (e.clientY + 14) + "px";
+  }
+  function hideTip() { tip.style.opacity = 0; }
+
+  // Accept the raw JSON, or JSON wrapped in a code fence or surrounding chat text.
+  function parse(text) {
+    const t = String(text || "").trim();
+    if (!t) return null;
+    const a = t.indexOf("{"), b = t.lastIndexOf("}");
+    if (a < 0 || b <= a) throw new Error("No save code found. It starts with { and ends with }.");
+    const s = JSON.parse(t.slice(a, b + 1));
+    if (typeof s !== "object" || s === null || !("xp" in s)) throw new Error("That JSON isn't an AI Level Up save code.");
+    return s;
+  }
+
+  // Everything the views need, computed once per render.
+  function derive(s) {
+    const xp = Math.max(0, Math.floor(num(s.xp)));
+    const prestige = Math.max(0, Math.floor(num(s.prestige)));
+    const season = s.season_xp == null ? xp : Math.max(0, Math.floor(num(s.season_xp)));
+    const per = 200 + 100 * prestige;
+    const level = 1 + Math.floor(season / per);
+    const trees = s.trees || {};
+    if (!("connecting" in trees) && "orchestration" in trees) trees.connecting = trees.orchestration;
+    const dormant = k => trees[k] == null || trees[k] === "dormant";
+    const live = TREES.filter(t => !dormant(t[0]));
+    const weakest = live.length ? live.reduce((a, t) => num(trees[t[0]]) < num(trees[a[0]]) ? t : a) : null;
+    const strongest = live.length ? live.reduce((a, t) => num(trees[t[0]]) > num(trees[a[0]]) ? t : a) : null;
+    const counts = s.counts || {};
+    const ranks = {};
+    TRACKS.forEach(t => { const c = Math.max(0, num(counts[t[0]])); let r = 0; while (r < 4 && c >= t[3][r]) r++; ranks[t[0]] = r; });
+    const earned = {};
+    (s.badges || []).forEach(b => { if (b && b.name && b.earned !== false) earned[b.name] = b; });
+    const ar = armory(s);
+    const credits = Math.max(0, xp - num(ar.spent));
+    return { xp, prestige, season, per, level, into: season % per, trees, dormant, weakest, strongest, counts, ranks, earned, ar, credits,
+      cls: CLASSES[strongest ? strongest[0] : "curiosity"], mirror: s.mirror || {} };
+  }
+
+  // Normalize the armory block, creating it on first load.
+  function armory(s) {
+    if (!s.armory || typeof s.armory !== "object") s.armory = { spent: 0, owned: [], perks: {}, equipped: {}, look: Object.assign({}, DEFAULT_LOOK), fresh: true };
+    const a = s.armory;
+    a.spent = Math.max(0, num(a.spent));
+    if (!Array.isArray(a.owned)) a.owned = [];
+    if (!a.perks || typeof a.perks !== "object") a.perks = {};
+    if (!a.equipped || typeof a.equipped !== "object") { a.equipped = {}; a.fresh = true; }
+    a.look = Object.assign({}, DEFAULT_LOOK, a.look || {});
+    return a;
+  }
+  function unlocked(it, D) {
+    const n = it.need;
+    if (!n) return false;
+    if (n.level) return D.level >= n.level || D.prestige > 0;
+    if (n.prestige) return D.prestige >= n.prestige;
+    if (n.badge) return !!D.earned[n.badge];
+    if (n.track) return D.ranks[n.track] >= n.rank;
+    if (n.platinum) return Object.values(D.ranks).some(r => r >= 4);
+    return false;
+  }
+  function owns(it, D) { return it.need ? unlocked(it, D) : D.ar.owned.indexOf(it.id) >= 0; }
+
+  // ---------- Avatar (layered SVG) ----------
+  function avatar(look, eq, o) {
+    o = o || {};
+    const id = "av" + (++uid);
+    const A = ACCENTS[look.accent] || ACCENTS[0];
+    const Sk = SKINS[look.skin] || SKINS[1];
+    const H = HAIRS[look.hair_color] || HAIRS[0];
+    const Sh = d3.color(Sk).darker(0.7).formatHex();
+    const c = { id, A, S: Sk, Sh, H, glow: 'filter="url(#' + id + 'f)"', metal: "url(#" + id + "m)", fade: "url(#" + id + "a)" };
+    const g = slot => eq[slot] || "";
+    const head = g("head"), hidesHair = head === "h_hood" || head === "h_helm", hidesFace = head === "h_helm";
+    const draw = (map, key) => (key && map[key] ? map[key](c) : "");
+
+    let s = '<svg viewBox="0 0 200 240" class="av' + (o.still || !MOTION ? " still" : "") + '" role="img" aria-label="' + esc(o.label || "Operative avatar") + '">' +
+      "<defs>" +
+      '<radialGradient id="' + id + 'g" cx="50%" cy="40%" r="55%"><stop offset="0" stop-color="' + A + '" stop-opacity=".32"/><stop offset="1" stop-color="' + A + '" stop-opacity="0"/></radialGradient>' +
+      '<linearGradient id="' + id + 'm" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f4f6ff"/><stop offset=".45" stop-color="#8a90a8"/><stop offset=".55" stop-color="#4f5570"/><stop offset="1" stop-color="#d8dcf0"/></linearGradient>' +
+      '<linearGradient id="' + id + 'a" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="' + A + '" stop-opacity=".85"/><stop offset="1" stop-color="' + A + '" stop-opacity=".1"/></linearGradient>' +
+      '<linearGradient id="' + id + 'i" x1="0" x2="1"><stop offset="0" stop-color="#ff2bd6"/><stop offset=".5" stop-color="#00f0ff"/><stop offset="1" stop-color="#f6ff3b"/></linearGradient>' +
+      '<pattern id="' + id + 'h" width="20" height="17.32" patternUnits="userSpaceOnUse"><path d="M5 0 L15 0 L20 8.66 L15 17.32 L5 17.32 L0 8.66 Z" fill="none" stroke="' + A + '" stroke-opacity=".35" stroke-width=".8"/></pattern>' +
+      '<clipPath id="' + id + 'c"><rect width="200" height="240"/></clipPath>' +
+      '<filter id="' + id + 'f" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+      '</defs><g clip-path="url(#' + id + 'c)">' +
+      '<rect width="200" height="240" fill="#0a0814"/>' + draw(AURA, g("aura")) +
+      '<circle cx="100" cy="100" r="96" fill="url(#' + id + 'g)"/>' +
+      draw(COAT_BACK, g("coat")) +
+      (hidesHair ? "" : draw(HAIR_BACK, look.hair)) +
+      (head === "h_hood" ? HOOD_BACK(c) : "") +
+      '<path d="M89 106 L111 106 L114 140 L86 140 Z" fill="' + Sh + '"/>' +
+      '<path d="M36 240 L40 178 Q44 148 80 138 L120 138 Q156 148 160 178 L164 240 Z" fill="#1b1728" stroke="#2c2540"/>' +
+      '<path d="M84 139 Q100 152 116 139" fill="none" stroke="#2c2540" stroke-width="3"/>' +
+      draw(BODY, g("body")) + emblem(c, o.cls) +
+      (g("ware") === "w_arm" ? WARE.w_arm(c) : "") +
+      draw(COAT_FRONT, g("coat")) +
+      '<ellipse cx="72" cy="88" rx="5" ry="8" fill="' + Sh + '"/><ellipse cx="128" cy="88" rx="5" ry="8" fill="' + Sh + '"/>' +
+      '<ellipse cx="100" cy="84" rx="28" ry="34" fill="' + Sk + '"/>' +
+      '<path d="M76 98 Q100 126 124 98 Q118 116 100 118 Q82 116 76 98 Z" fill="' + Sh + '" opacity=".35"/>' +
+      (hidesFace ? "" : face(c)) +
+      (g("ware") && g("ware") !== "w_arm" ? draw(WARE, g("ware")) : "") +
+      (hidesHair ? "" : draw(HAIR, look.hair)) +
+      (hidesFace ? "" : draw(OPTICS, g("optics"))) +
+      draw(HEAD, head) +
+      draw(DRONE, g("drone")) +
+      "</g></svg>";
+    return s;
+  }
+  function face(c) {
+    return '<ellipse cx="89" cy="86" rx="5.5" ry="3" fill="#0b0a12"/><ellipse cx="111" cy="86" rx="5.5" ry="3" fill="#0b0a12"/>' +
+      '<circle cx="89.5" cy="86" r="1.7" fill="' + c.A + '"/><circle cx="111.5" cy="86" r="1.7" fill="' + c.A + '"/>' +
+      '<path d="M81 78 L96 76.5 M104 76.5 L119 78" stroke="' + c.H + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<path d="M100 89 L97 100 L102 100" fill="none" stroke="' + c.Sh + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M93 108 Q100 111 107 108" fill="none" stroke="' + c.Sh + '" stroke-width="2" stroke-linecap="round"/>';
+  }
+  function emblem(c, key) {
+    const k = CLASSES[key] ? key : null;
+    if (!k) return "";
+    return '<g transform="translate(91 186) scale(.375)" opacity=".9"><path d="' + CLASSES[k][2] + '" fill="none" stroke="' + c.A + '" stroke-width="4" stroke-linejoin="round" ' + c.glow + "/></g>";
+  }
+  const HAIR_BACK = {
+    long: c => '<path d="M68 80 Q58 140 72 166 L128 166 Q142 140 132 80 Z" fill="' + c.H + '"/>'
+  };
+  const HAIR = {
+    buzz: c => '<path d="M72 82 Q71 49 100 48 Q129 49 128 82 Q123 63 100 61 Q77 63 72 82 Z" fill="' + c.H + '" opacity=".92"/>',
+    mohawk: c => '<path d="M72 82 Q71 52 100 50 Q129 52 128 82 Q123 64 100 62 Q77 64 72 82 Z" fill="' + c.H + '" opacity=".3"/>' +
+      '<path d="M92 64 Q93 30 100 18 Q107 30 108 64 Q100 57 92 64 Z" fill="' + c.H + '"/><path d="M100 22 Q103 36 104 58" stroke="#fff" stroke-opacity=".35" stroke-width="1.5" fill="none"/>',
+    undercut: c => '<path d="M72 82 Q71 52 100 50 Q129 52 128 82 Q123 64 100 62 Q77 64 72 82 Z" fill="' + c.H + '" opacity=".3"/>' +
+      '<path d="M70 74 Q64 40 102 40 Q138 42 134 70 Q124 56 104 60 Q84 62 70 74 Z" fill="' + c.H + '"/><path d="M118 52 Q134 58 132 76 Q126 64 112 60 Z" fill="' + c.H + '"/>',
+    long: c => '<path d="M71 84 Q68 47 100 46 Q132 47 129 84 Q122 60 100 58 Q78 60 71 84 Z" fill="' + c.H + '"/>' +
+      '<path d="M71 80 Q68 112 74 132 L80 132 Q77 104 79 76 Z M129 80 Q132 112 126 132 L120 132 Q123 104 121 76 Z" fill="' + c.H + '"/>'
+  };
+  function HOOD_BACK(c) { return '<path d="M56 152 Q48 66 100 38 Q152 66 144 152 Z" fill="#221b33" stroke="#3a3050"/>'; }
+  const HEAD = {
+    h_band: c => '<path d="M71 70 Q100 60 129 70 L129 77 Q100 67 71 77 Z" fill="' + c.A + '" ' + c.glow + ' class="pulse"/><path d="M129 72 L138 80 L134 70 Z" fill="' + c.A + '"/>',
+    h_hood: c => '<path d="M64 124 Q60 58 100 46 Q140 58 136 124 Q130 70 100 62 Q70 70 64 124 Z" fill="#2c2442"/><path d="M66 120 Q64 66 100 54 Q136 66 134 120" fill="none" stroke="' + c.A + '" stroke-opacity=".6" stroke-width="1.5"/>',
+    h_crown: c => '<path d="M70 70 Q100 59 130 70" fill="none" stroke="' + c.metal + '" stroke-width="3.5"/><path d="M100 61 L104 48 L100 52 L96 48 Z" fill="' + c.metal + '"/>' +
+      [78, 100, 122].map((x, i) => '<circle cx="' + x + '" cy="' + (i === 1 ? 61 : 66) + '" r="3" fill="' + c.A + '" ' + c.glow + ' class="pulse"/>').join(""),
+    h_helm: c => '<path d="M68 94 Q65 46 100 44 Q135 46 132 94 L130 114 Q100 128 70 114 Z" fill="#262b3e" stroke="#4a5170"/>' +
+      '<path d="M76 54 Q100 46 122 54" stroke="#fff" stroke-opacity=".25" stroke-width="3" fill="none"/>' +
+      '<rect x="76" y="80" width="48" height="8" rx="2" fill="' + c.A + '" ' + c.glow + '/><rect x="96" y="80" width="8" height="26" rx="2" fill="' + c.A + '" ' + c.glow + '/>' +
+      '<path d="M74 100 L84 104 M126 100 L116 104 M74 106 L84 110 M126 106 L116 110" stroke="#4a5170" stroke-width="2"/>',
+    h_halo: c => '<ellipse cx="100" cy="36" rx="27" ry="6.5" fill="none" stroke="#ffd84a" stroke-width="3.5" ' + c.glow + ' class="pulse"/>'
+  };
+  const OPTICS = {
+    o_shades: c => '<rect x="79" y="80" width="18" height="10" rx="3" fill="#07060c" stroke="' + c.metal + '" stroke-width="1.5"/><rect x="103" y="80" width="18" height="10" rx="3" fill="#07060c" stroke="' + c.metal + '" stroke-width="1.5"/>' +
+      '<path d="M97 84 L103 84" stroke="' + c.metal + '" stroke-width="2"/><path d="M82 88 L88 82 M106 88 L112 82" stroke="' + c.A + '" stroke-opacity=".85" stroke-width="1.5"/>',
+    o_monocle: c => '<circle cx="111" cy="86" r="8.5" fill="' + c.A + '" fill-opacity=".18" stroke="' + c.A + '" stroke-width="2" ' + c.glow + '/><path d="M119.5 86 L129 90" stroke="' + c.metal + '" stroke-width="2"/>' +
+      '<path d="M106 86 L116 86 M111 81 L111 91" stroke="' + c.A + '" stroke-width=".8"/>',
+    o_visor: c => '<path d="M73 79 Q100 73 127 79 L127 92 Q100 96 73 92 Z" fill="' + c.A + '" fill-opacity=".55" stroke="' + c.A + '" ' + c.glow + '/>' +
+      '<path d="M78 85 L122 85" stroke="#fff" stroke-opacity=".6" stroke-width="1" class="pulse"/>',
+    o_trilens: c => [89, 111].map(x => '<circle cx="' + x + '" cy="86" r="7" fill="#0b0a12" stroke="' + c.metal + '" stroke-width="2"/>' +
+      '<circle cx="' + x + '" cy="83" r="1.8" fill="' + c.A + '" ' + c.glow + '/><circle cx="' + (x - 2.6) + '" cy="88" r="1.8" fill="' + c.A + '" ' + c.glow + '/><circle cx="' + (x + 2.6) + '" cy="88" r="1.8" fill="#ff3b6b" ' + c.glow + "/>").join(""),
+    o_mirror: c => '<path d="M73 79 Q100 73 127 79 L127 92 Q100 96 73 92 Z" fill="url(#' + c.id + 'i)" fill-opacity=".85" ' + c.glow + '/><path d="M78 82 L90 82" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/>'
+  };
+  const BODY = {
+    b_jacket: c => '<path d="M38 240 L41 178 Q45 148 80 138 L120 138 Q155 148 159 178 L162 240 Z" fill="#2a2038"/>' +
+      '<path d="M80 138 L92 180 L100 150 Z M120 138 L108 180 L100 150 Z" fill="#3a2d52"/><path d="M100 152 L100 240" stroke="' + c.A + '" stroke-width="2" ' + c.glow + '/>' +
+      '<path d="M54 170 L60 240 M146 170 L140 240" stroke="#1b1528" stroke-width="2"/>',
+    b_vest: c => '<path d="M58 160 Q100 148 142 160 L146 240 L54 240 Z" fill="#2b3140" stroke="#47506a"/>' +
+      '<path d="M62 182 L138 182 M60 204 L140 204 M58 226 L142 226" stroke="#3b4358" stroke-width="2"/>' +
+      '<rect x="66" y="188" width="18" height="12" fill="#363e52" stroke="' + c.A + '" stroke-opacity=".5"/><rect x="116" y="188" width="18" height="12" fill="#363e52" stroke="' + c.A + '" stroke-opacity=".5"/>',
+    b_plate: c => '<ellipse cx="50" cy="160" rx="22" ry="15" fill="' + c.metal + '"/><ellipse cx="150" cy="160" rx="22" ry="15" fill="' + c.metal + '"/>' +
+      '<path d="M62 156 Q100 144 138 156 L134 212 Q100 224 66 212 Z" fill="' + c.metal + '" stroke="#2c2f40"/><path d="M100 150 L100 220" stroke="' + c.A + '" stroke-width="1.5" ' + c.glow + "/>",
+    b_exo: c => '<path d="M38 240 L41 176 Q45 148 80 138 L120 138 Q155 148 159 176 L162 240 Z" fill="#11141f"/>' +
+      '<path d="M30 168 Q36 140 70 138 L74 160 Q50 160 38 176 Z M170 168 Q164 140 130 138 L126 160 Q150 160 162 176 Z" fill="#1d2233" stroke="' + c.A + '" stroke-opacity=".6"/>' +
+      '<path d="M66 170 L82 170 L88 200 L70 214 M134 170 L118 170 L112 200 L130 214" fill="none" stroke="' + c.A + '" stroke-width="1.5" ' + c.glow + '/>' +
+      '<circle cx="100" cy="184" r="12" fill="#0a0d16" stroke="' + c.metal + '" stroke-width="3"/><circle cx="100" cy="184" r="7" fill="' + c.A + '" ' + c.glow + ' class="pulse"/>',
+    b_ascend: c => '<path d="M36 240 L40 176 Q44 146 80 136 L120 136 Q156 146 160 176 L164 240 Z" fill="#efeae0"/>' +
+      '<path d="M78 136 L72 118 L90 130 Z M122 136 L128 118 L110 130 Z" fill="#ffd84a"/>' +
+      '<path d="M100 146 L100 240 M70 160 Q100 178 130 160 M60 200 Q100 214 140 200" fill="none" stroke="#ffd84a" stroke-width="2.5"/>' +
+      '<path d="M84 168 L100 196 L116 168" fill="none" stroke="' + c.A + '" stroke-width="2" ' + c.glow + '/><circle cx="100" cy="166" r="5" fill="' + c.A + '" ' + c.glow + ' class="pulse"/>',
+    b_builder: c => '<path d="M58 152 L146 236 M142 152 L54 236" stroke="#b88a1e" stroke-width="7"/>' +
+      '<path d="M58 152 L146 236 M142 152 L54 236" stroke="#f6ff3b" stroke-width="7" stroke-dasharray="6 6" opacity=".35"/>' +
+      '<rect x="91" y="185" width="18" height="16" rx="2" fill="' + c.metal + '" stroke="#2c2f40"/><rect x="62" y="214" width="10" height="16" fill="#7a5d14"/><rect x="128" y="214" width="10" height="16" fill="#7a5d14"/>',
+    b_operator: c => '<path d="M46 240 L50 176 Q60 150 84 146 L116 146 Q140 150 150 176 L154 240 Z" fill="#253128" stroke="#3c5040"/>' +
+      '<rect x="66" y="172" width="22" height="16" fill="#1c261f" stroke="#3c5040"/><rect x="112" y="172" width="22" height="16" fill="#1c261f" stroke="#3c5040"/>' +
+      '<circle cx="77" cy="180" r="2.5" fill="' + c.A + '" ' + c.glow + '/><circle cx="123" cy="180" r="2.5" fill="' + c.A + '" ' + c.glow + '/><path d="M70 204 L130 204" stroke="#3c5040" stroke-width="5"/>',
+    b_commander: c => '<path d="M38 240 L41 178 Q45 148 80 138 L120 138 Q155 148 159 178 L162 240 Z" fill="#1c1a2e"/>' +
+      '<path d="M28 160 Q40 140 74 140 L72 152 Q48 150 34 168 Z M172 160 Q160 140 126 140 L128 152 Q152 150 166 168 Z" fill="#ffd84a"/>' +
+      '<path d="M34 166 L36 176 M42 160 L44 172 M166 166 L164 176 M158 160 L156 172" stroke="#ffd84a" stroke-width="2"/>' +
+      '<path d="M128 146 L70 240" stroke="#a3132f" stroke-width="10"/><path d="M128 146 L70 240" stroke="#ffd84a" stroke-width="1.5" stroke-dasharray="3 5"/>'
+  };
+  const COAT_BACK = {
+    c_duster: c => '<path d="M26 240 L33 168 Q38 138 78 130 L122 130 Q162 138 167 168 L174 240 Z" fill="#17121f" stroke="#2c2540"/>',
+    c_cape: c => '<path d="M46 150 Q14 200 10 240 L190 240 Q186 200 154 150 Z" fill="' + c.A + '" fill-opacity=".22" stroke="' + c.A + '" stroke-opacity=".55"/>' +
+      '<path d="M60 160 Q40 200 36 240 M140 160 Q160 200 164 240" stroke="' + c.A + '" stroke-opacity=".25" fill="none"/>',
+    c_holo: c => '<path d="M24 240 L32 166 Q38 136 78 128 L122 128 Q162 136 168 166 L176 240 Z" fill="' + c.fade + '" opacity=".45" stroke="' + c.A + '" ' + c.glow + ' class="pulse"/>'
+  };
+  const COAT_FRONT = {
+    c_duster: c => '<path d="M76 140 L68 108 L88 128 Z M124 140 L132 108 L112 128 Z" fill="#221a30" stroke="' + c.A + '" stroke-opacity=".45"/>' +
+      '<path d="M78 142 L66 240 M122 142 L134 240" stroke="#211a2e" stroke-width="10"/>',
+    c_cape: c => '<circle cx="66" cy="148" r="5" fill="' + c.metal + '"/><circle cx="134" cy="148" r="5" fill="' + c.metal + '"/><path d="M71 148 Q100 158 129 148" stroke="' + c.metal + '" stroke-width="1.5" fill="none"/>',
+    c_holo: c => '<path d="M76 140 L68 106 L88 128 M124 140 L132 106 L112 128" fill="none" stroke="' + c.A + '" stroke-width="2" ' + c.glow + "/>"
+  };
+  const WARE = {
+    w_jack: c => '<circle cx="128" cy="98" r="3.6" fill="' + c.A + '" stroke="' + c.metal + '" stroke-width="1.5" ' + c.glow + ' class="pulse"/>' +
+      '<path d="M128 102 Q138 124 152 152" stroke="#3d3d50" stroke-width="2.5" fill="none"/><path d="M128 102 Q138 124 152 152" stroke="' + c.A + '" stroke-width="1" stroke-dasharray="2 6" fill="none"/>',
+    w_tattoo: c => '<path d="M80 95 L76 103 L82 111 M76 103 L70 104 M118 96 L124 102 L120 110 M94 122 L94 132 L100 136 L106 132 L106 122" fill="none" stroke="' + c.A + '" stroke-width="1.2" ' + c.glow + '/>' +
+      '<circle cx="82" cy="111" r="1.4" fill="' + c.A + '"/><circle cx="120" cy="110" r="1.4" fill="' + c.A + '"/>',
+    w_jaw: c => '<path d="M78 102 Q100 126 122 102 L120 110 Q100 130 80 110 Z" fill="' + c.metal + '" stroke="#2c2f40"/>' +
+      '<path d="M90 112 L90 118 M96 114 L96 121 M104 114 L104 121 M110 112 L110 118" stroke="#2c2f40" stroke-width="1.5"/><circle cx="118" cy="106" r="1.6" fill="' + c.A + '" ' + c.glow + "/>",
+    w_arm: c => '<ellipse cx="50" cy="164" rx="21" ry="17" fill="' + c.metal + '" stroke="#2c2f40"/><rect x="32" y="172" width="32" height="70" rx="8" fill="' + c.metal + '" stroke="#2c2f40"/>' +
+      '<path d="M32 196 L64 196 M32 220 L64 220" stroke="#2c2f40" stroke-width="2"/><circle cx="50" cy="164" r="4" fill="' + c.A + '" ' + c.glow + ' class="pulse"/>' +
+      '<path d="M40 204 L56 204 M40 210 L52 210" stroke="' + c.A + '" stroke-width="1.2" ' + c.glow + "/>",
+    w_scar: c => '<path d="M83 72 L93 100" stroke="#ff3b6b" stroke-width="2.2" stroke-linecap="round" ' + c.glow + '/><path d="M85 80 L89 79 M87 88 L91 87" stroke="#ff3b6b" stroke-width="1.2"/>'
+  };
+  const DRONE = {
+    d_signal: c => '<g class="hover"><rect x="150" y="44" width="22" height="11" rx="3" fill="#232035" stroke="' + c.metal + '"/><path d="M161 44 L161 32" stroke="' + c.metal + '" stroke-width="1.5"/>' +
+      '<circle cx="161" cy="31" r="2" fill="' + c.A + '" ' + c.glow + '/><path d="M167 26 Q172 31 167 36 M171 22 Q179 31 171 40" fill="none" stroke="' + c.A + '" stroke-width="1.3" class="pulse"/>' +
+      '<rect x="155" y="48" width="12" height="3" fill="' + c.A + '" ' + c.glow + "/></g>",
+    d_orb: c => '<g class="hover"><circle cx="160" cy="54" r="11" fill="#1b1f2e" stroke="' + c.metal + '" stroke-width="2"/><circle cx="160" cy="54" r="4.5" fill="' + c.A + '" ' + c.glow + '/>' +
+      '<path d="M160 43 L160 35" stroke="' + c.metal + '" stroke-width="1.5"/><ellipse cx="160" cy="70" rx="6" ry="2" fill="' + c.A + '" opacity=".5" class="pulse"/></g>',
+    d_cat: c => '<g opacity=".9" ' + c.glow + '><path d="M140 118 L142 106 L148 113 Z M152 113 L158 106 L160 118 Z" fill="' + c.A + '" fill-opacity=".5" stroke="' + c.A + '"/>' +
+      '<circle cx="150" cy="122" r="10" fill="' + c.A + '" fill-opacity=".35" stroke="' + c.A + '"/><ellipse cx="160" cy="139" rx="15" ry="8" fill="' + c.A + '" fill-opacity=".3" stroke="' + c.A + '"/>' +
+      '<path d="M174 138 Q186 128 180 116" fill="none" stroke="' + c.A + '" stroke-width="2.5" stroke-linecap="round"/>' +
+      '<circle cx="146" cy="121" r="1.6" fill="#f6ff3b"/><circle cx="154" cy="121" r="1.6" fill="#f6ff3b"/></g>',
+    d_tri: c => '<g class="orbit">' + [[40, 46], [168, 48], [100, 158]].map(p => '<path d="M' + p[0] + " " + (p[1] - 7) + " L" + (p[0] + 7) + " " + (p[1] + 5) + " L" + (p[0] - 7) + " " + (p[1] + 5) + ' Z" fill="#1b1f2e" stroke="' + c.A + '" stroke-width="1.5" ' + c.glow + '/><circle cx="' + p[0] + '" cy="' + (p[1] + 1) + '" r="1.8" fill="' + c.A + '"/>').join("") + "</g>"
+  };
+  // Deterministic pseudo-random so a backdrop looks the same every time.
+  function rnd(n) { const x = Math.sin(n * 99.13) * 43758.5453; return x - Math.floor(x); }
+  const AURA = {
+    x_rain: c => '<g class="fall">' + d3.range(70).map(i => {
+      const x = rnd(i) * 200, y = rnd(i + 7) * 480, l = 6 + rnd(i + 3) * 14;
+      return '<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + (y + l).toFixed(1) + '" stroke="' + c.A + '" stroke-opacity="' + (0.15 + rnd(i + 5) * 0.4).toFixed(2) + '"/>';
+    }).join("") + "</g>",
+    x_skyline: c => d3.range(11).map(i => {
+      const w = 14 + rnd(i) * 16, x = i * 19 - 6, h = 50 + rnd(i + 2) * 110, y = 240 - h;
+      let win = "";
+      for (let wy = y + 6; wy < 236; wy += 9) for (let wx = x + 3; wx < x + w - 3; wx += 6) if (rnd(wx * 3 + wy) > 0.62) win += '<rect x="' + wx.toFixed(1) + '" y="' + wy.toFixed(1) + '" width="2.5" height="3.5" fill="' + (rnd(wx + wy) > 0.5 ? c.A : "#ff2bd6") + '" opacity=".55"/>';
+      return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="#130f22" stroke="#231b3a"/>' + win;
+    }).join(""),
+    x_grid: c => '<circle cx="100" cy="128" r="54" fill="#ff2bd6" opacity=".55"/><path d="M46 128 A54 54 0 0 1 154 128 Z" fill="#f6ff3b" opacity=".35"/>' +
+      d3.range(6).map(i => '<rect x="40" y="' + (130 + i * 8) + '" width="120" height="' + (1 + i * 0.6) + '" fill="#0a0814"/>').join("") +
+      '<rect x="0" y="160" width="200" height="80" fill="#0a0814"/>' +
+      d3.range(-10, 11).map(i => '<line x1="100" y1="160" x2="' + (100 + i * 30) + '" y2="240" stroke="#ff2bd6" stroke-opacity=".5"/>').join("") +
+      d3.range(7).map(i => { const y = 160 + Math.pow(i / 6, 2) * 80; return '<line x1="0" y1="' + y.toFixed(1) + '" x2="200" y2="' + y.toFixed(1) + '" stroke="#ff2bd6" stroke-opacity=".5"/>'; }).join(""),
+    x_glitch: c => '<g class="jit">' + d3.range(16).map(i => '<rect x="' + (rnd(i) * 160 - 20).toFixed(1) + '" y="' + (rnd(i + 9) * 240).toFixed(1) + '" width="' + (30 + rnd(i + 4) * 90).toFixed(1) + '" height="' + (2 + rnd(i + 2) * 7).toFixed(1) + '" fill="' + (i % 2 ? "#ff2bd6" : "#00f0ff") + '" opacity=".28"/>').join("") + "</g>",
+    x_storm: c => d3.range(5).map(i => '<circle cx="100" cy="92" r="' + (40 + i * 22) + '" fill="none" stroke="' + c.A + '" stroke-opacity="' + (0.5 - i * 0.08) + '" stroke-dasharray="' + (2 + i * 3) + " " + (4 + i * 2) + '"' + (i % 2 ? ' class="pulse"' : "") + "/>").join("") +
+      d3.range(26).map(i => '<text x="' + (rnd(i) * 190).toFixed(1) + '" y="' + (rnd(i + 11) * 236).toFixed(1) + '" font-family="monospace" font-size="7" fill="' + c.A + '" opacity=".35">' + (rnd(i + 3) > 0.5 ? "01" : "10") + "</text>").join(""),
+    x_ice: c => '<rect width="200" height="240" fill="#05030a"/><rect width="200" height="240" fill="url(#' + c.id + 'h)"/>' +
+      '<rect width="200" height="240" fill="url(#' + c.id + 'h)" class="pulse" opacity=".8"/><text x="8" y="232" font-family="monospace" font-size="7" letter-spacing="2" fill="#ff3b6b" opacity=".7">ICE ACTIVE</text>',
+    x_plat: c => '<circle cx="100" cy="96" r="110" fill="#cfefff" opacity=".08"/>' + d3.range(12).map(i => {
+      const a = i / 12 * Math.PI * 2; return '<line x1="100" y1="96" x2="' + (100 + Math.cos(a) * 160).toFixed(1) + '" y2="' + (96 + Math.sin(a) * 160).toFixed(1) + '" stroke="#cfefff" stroke-opacity=".12" stroke-width="6"/>';
+    }).join("")
+  };
+  function classIcon(key, color) {
+    return '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="' + CLASSES[key][2] + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linejoin="round"/></svg>';
+  }
+  function badgeIcon(on) {
+    return '<svg class="ico" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 2 L27 9 V21 L15 28 L3 21 V9 Z" fill="' + (on ? "rgba(0,240,255,.12)" : "none") + '" stroke="' + (on ? "#00f0ff" : "#8d86a8") + '" stroke-width="1.5"/>' +
+      (on ? '<path d="M15 8 L21 15 L15 22 L9 15 Z" fill="#00f0ff"/>' : "") + "</svg>";
+  }
+
+  // ---------- D3 charts ----------
+  function drawRing(el, pct, level) {
+    const svg = d3.select(el).append("svg").attr("viewBox", "0 0 130 130").attr("role", "img").attr("aria-label", "Level " + level + ", " + Math.round(pct) + "% to next level");
+    const defs = svg.append("defs");
+    const lg = defs.append("linearGradient").attr("id", "ringg").attr("x1", 0).attr("x2", 1).attr("y1", 0).attr("y2", 1);
+    lg.append("stop").attr("offset", 0).attr("stop-color", "#ff2bd6");
+    lg.append("stop").attr("offset", 1).attr("stop-color", "#00f0ff");
+    const g = svg.append("g").attr("transform", "translate(65,65)");
+    g.selectAll("line").data(d3.range(48)).join("line")
+      .attr("x1", 0).attr("x2", 0).attr("y1", -62).attr("y2", d => d % 4 ? -59 : -56)
+      .attr("transform", d => "rotate(" + d * 7.5 + ")").attr("stroke", "#3a3058");
+    const arc = d3.arc().innerRadius(44).outerRadius(52);
+    g.append("path").attr("d", arc({ startAngle: 0, endAngle: Math.PI * 2 })).attr("fill", "#1a1430");
+    const fg = g.append("path").attr("fill", "url(#ringg)").style("filter", "drop-shadow(0 0 6px rgba(0,240,255,.6))");
+    const end = Math.max(0.02, pct / 100) * Math.PI * 2;
+    fg.transition().duration(MOTION ? 1300 : 0).ease(d3.easeCubicOut)
+      .attrTween("d", () => { const i = d3.interpolate(0, end); return t => arc({ startAngle: 0, endAngle: i(t) }); });
+    g.append("text").attr("y", -10).attr("text-anchor", "middle").attr("fill", "#8d86a8").style("font", "700 9px var(--mono)").style("letter-spacing", ".2em").text("LEVEL");
+    g.append("text").attr("y", 22).attr("text-anchor", "middle").attr("fill", "#ece9f7").style("font", "800 34px var(--mono)").text(level);
+  }
+
+  function drawRadar(el, D) {
+    const W = 400, H = 360, cx = W / 2, cy = H / 2, R = 118, n = TREES.length;
+    const ang = i => -Math.PI / 2 + i * 2 * Math.PI / n;
+    const pt = (i, v) => [cx + Math.cos(ang(i)) * R * v / 10, cy + Math.sin(ang(i)) * R * v / 10];
+    const svg = d3.select(el).append("svg").attr("viewBox", "0 0 " + W + " " + H).attr("role", "img").attr("aria-label", "Skill matrix radar chart");
+    const defs = svg.append("defs");
+    const rg = defs.append("radialGradient").attr("id", "radg");
+    rg.append("stop").attr("offset", 0).attr("stop-color", "#ff2bd6").attr("stop-opacity", .05);
+    rg.append("stop").attr("offset", 1).attr("stop-color", "#00f0ff").attr("stop-opacity", .35);
+    [2, 4, 6, 8, 10].forEach(v => {
+      svg.append("polygon").attr("points", TREES.map((t, i) => pt(i, v).join(",")).join(" "))
+        .attr("fill", v === 10 ? "rgba(255,255,255,.015)" : "none").attr("stroke", v === 10 ? "#3a3058" : "#241d3a");
+    });
+    [2, 4, 6, 8].forEach(v => svg.append("text").attr("x", cx + 3).attr("y", cy - R * v / 10 - 2).attr("fill", "#5c5578").style("font", "9px var(--mono)").text(v));
+    TREES.forEach((t, i) => {
+      const dorm = D.dormant(t[0]);
+      const e = pt(i, 10);
+      svg.append("line").attr("x1", cx).attr("y1", cy).attr("x2", e[0]).attr("y2", e[1]).attr("stroke", dorm ? "#3a3058" : "#2c2545").attr("stroke-dasharray", dorm ? "3 4" : null);
+      const l = pt(i, 12.4), cos = Math.cos(ang(i));
+      const anchor = Math.abs(cos) < 0.2 ? "middle" : cos > 0 ? "start" : "end";
+      const tx = svg.append("text").attr("x", l[0]).attr("y", l[1]).attr("text-anchor", anchor).attr("dominant-baseline", "middle");
+      tx.append("tspan").attr("x", l[0]).attr("fill", dorm ? "#5c5578" : (D.strongest === t ? "#ff2bd6" : "#c9c3e0")).style("font", "700 11px var(--mono)").style("letter-spacing", ".06em").text(t[2].toUpperCase());
+      tx.append("tspan").attr("x", l[0]).attr("dy", 13).attr("fill", dorm ? "#5c5578" : (D.weakest === t ? "#ffb020" : "#00f0ff")).style("font", "700 11px var(--mono)")
+        .text(dorm ? "DORMANT" : num(D.trees[t[0]]).toFixed(1));
+    });
+    const vals = TREES.map(t => D.dormant(t[0]) ? 0 : clamp(num(D.trees[t[0]]), 0, 10));
+    const line = d3.line().curve(d3.curveLinearClosed);
+    const shape = svg.append("g").attr("transform", "translate(" + cx + "," + cy + ") scale(" + (MOTION ? 0 : 1) + ")");
+    const rel = vals.map((v, i) => { const p = pt(i, v); return [p[0] - cx, p[1] - cy]; });
+    shape.append("path").attr("d", line(rel)).attr("fill", "url(#radg)").attr("stroke", "#00f0ff").attr("stroke-width", 2).style("filter", "drop-shadow(0 0 6px rgba(0,240,255,.55))");
+    shape.selectAll("circle").data(TREES).join("circle")
+      .attr("cx", (t, i) => rel[i][0]).attr("cy", (t, i) => rel[i][1]).attr("r", 4.5)
+      .attr("fill", t => D.weakest === t ? "#ffb020" : D.strongest === t ? "#ff2bd6" : "#00f0ff").attr("stroke", "#05040a").attr("stroke-width", 1.5)
+      .style("cursor", "default")
+      .on("mousemove", (e, t) => showTip(e, esc(t[1]) + "<br>" + (D.dormant(t[0]) ? "Dormant: no evidence yet" : num(D.trees[t[0]]).toFixed(1) + " / 10")))
+      .on("mouseleave", hideTip);
+    if (MOTION) shape.transition().duration(1000).ease(d3.easeBackOut.overshoot(1.2)).attr("transform", "translate(" + cx + "," + cy + ") scale(1)");
+  }
+
+  function drawHistory(el, hist) {
+    const p = d3.timeParse("%Y-%m-%d");
+    const data = (hist || []).map(h => ({ d: p(String(h.date || "").slice(0, 10)), v: num(h.score), r: h.reason })).filter(x => x.d).sort((a, b) => a.d - b.d);
+    if (data.length < 2) { el.innerHTML = '<p class="empty">Score history appears after your next evaluation.</p>'; return; }
+    const W = 520, H = 180, m = { t: 14, r: 14, b: 26, l: 30 };
+    const x = d3.scaleTime().domain(d3.extent(data, d => d.d)).range([m.l, W - m.r]);
+    const lo = d3.min(data, d => d.v), hi = d3.max(data, d => d.v);
+    const y = d3.scaleLinear().domain([Math.max(0, lo - 0.5), Math.min(10, hi + 0.3)]).nice().range([H - m.b, m.t]);
+    const svg = d3.select(el).append("svg").attr("viewBox", "0 0 " + W + " " + H).attr("role", "img").attr("aria-label", "Score history line chart");
+    const lg = svg.append("defs").append("linearGradient").attr("id", "histg").attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 1);
+    lg.append("stop").attr("offset", 0).attr("stop-color", "#ff2bd6").attr("stop-opacity", .35);
+    lg.append("stop").attr("offset", 1).attr("stop-color", "#ff2bd6").attr("stop-opacity", 0);
+    svg.append("g").attr("class", "axis").attr("transform", "translate(0," + (H - m.b) + ")")
+      .call(d3.axisBottom(x).ticks(Math.min(5, data.length)).tickFormat(d3.timeFormat("%b %d")).tickSizeOuter(0));
+    svg.append("g").attr("class", "axis").attr("transform", "translate(" + m.l + ",0)").call(d3.axisLeft(y).ticks(4).tickSize(-(W - m.l - m.r)))
+      .call(g => g.selectAll(".tick line").attr("stroke", "#1f1934")).call(g => g.select(".domain").remove());
+    svg.append("path").datum(data).attr("fill", "url(#histg)").attr("d", d3.area().x(d => x(d.d)).y0(H - m.b).y1(d => y(d.v)).curve(d3.curveMonotoneX));
+    const path = svg.append("path").datum(data).attr("fill", "none").attr("stroke", "#ff2bd6").attr("stroke-width", 2.5)
+      .style("filter", "drop-shadow(0 0 5px rgba(255,43,214,.7))").attr("d", d3.line().x(d => x(d.d)).y(d => y(d.v)).curve(d3.curveMonotoneX));
+    if (MOTION) {
+      const L = path.node().getTotalLength();
+      path.attr("stroke-dasharray", L + " " + L).attr("stroke-dashoffset", L).transition().duration(1200).ease(d3.easeCubicOut).attr("stroke-dashoffset", 0);
+    }
+    svg.selectAll("circle").data(data).join("circle").attr("cx", d => x(d.d)).attr("cy", d => y(d.v)).attr("r", 4)
+      .attr("fill", "#05040a").attr("stroke", "#00f0ff").attr("stroke-width", 2)
+      .on("mousemove", (e, d) => showTip(e, d3.timeFormat("%b %d, %Y")(d.d) + " · <b>" + d.v.toFixed(1) + "</b><br>" + esc(d.r || "")))
+      .on("mouseleave", hideTip);
+  }
+
+  function drawCoverage(el, used, avail) {
+    const svg = d3.select(el).append("svg").attr("viewBox", "0 0 120 120").attr("role", "img").attr("aria-label", used + " of " + avail + " feature areas in use");
+    const g = svg.append("g").attr("transform", "translate(60,60)");
+    const arcs = d3.pie().value(1).padAngle(0.06).sort(null)(d3.range(avail));
+    const arc = d3.arc().innerRadius(38).outerRadius(52);
+    g.selectAll("path").data(arcs).join("path").attr("d", arc)
+      .attr("fill", (d, i) => i < used ? "#00f0ff" : "#1f1934")
+      .style("filter", (d, i) => i < used ? "drop-shadow(0 0 4px rgba(0,240,255,.6))" : null)
+      .attr("opacity", MOTION ? 0 : 1)
+      .transition().delay((d, i) => MOTION ? i * 60 : 0).duration(MOTION ? 300 : 0).attr("opacity", 1);
+    g.append("text").attr("y", 8).attr("text-anchor", "middle").attr("fill", "#ece9f7").style("font", "800 22px var(--mono)").text(used + "/" + avail);
+  }
+
+  // ---------- Views ----------
+  function ticker(s, D) {
+    const bits = [
+      "<b>" + esc(s.player || "Operative") + "</b> online", "Class <b>" + esc(D.cls[0]) + "</b>", "Level <b>" + D.level + "</b> · " + tierFor(D.level),
+      "Credits <b>" + D.credits.toLocaleString() + "</b>"
+    ].concat((s.log || []).slice(0, 4).map(l => esc(l.event) + " <b>+" + num(l.xp) + " XP</b>"));
+    if (s.next_action) bits.push("Next: " + esc(s.next_action));
+    const line = bits.join("<i>◆</i>") + "<i>◆</i>";
+    document.getElementById("ticker").innerHTML = '<div class="ticker" aria-hidden="true"><span class="run">' + line + line + "</span></div>";
+  }
+
+  function topbar(D) {
+    const tab = (k, label, extra) => '<button class="tab" role="tab" type="button" data-view="' + k + '" aria-selected="' + (view === k) + '">' + label + (extra || "") + "</button>";
+    return '<div class="topbar"><div class="brand"><svg class="logo" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L25 8 V18 L13 25 L1 18 V8 Z" fill="none" stroke="#00f0ff" stroke-width="1.6"/><path d="M8 17 L13 7 L18 17 M10 14 H16" fill="none" stroke="#ff2bd6" stroke-width="1.8"/></svg>' +
+      "<b>AI LEVEL UP <span>//</span> CMD</b></div>" +
+      '<div class="tabs" role="tablist">' + tab("command", "Command") + tab("operative", "Operative") + tab("armory", "Armory", '<span class="n">' + D.credits.toLocaleString() + " CR</span>") + "</div>" +
+      '<span class="stamp">Last eval ' + esc(S.last_eval || "—") + ' <button id="swap" type="button">Load save</button></span></div>';
+  }
+
+  function commandView(s, D) {
+    const score = num(s.score), prev = s.prev_score == null ? null : num(s.prev_score);
+    const delta = prev == null ? 0 : Math.round((score - prev) * 10) / 10;
+    const dcls = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+    const dtxt = prev == null ? "baseline" : (delta > 0 ? "▲ " : delta < 0 ? "▼ " : "■ ") + Math.abs(delta).toFixed(1) + " from " + prev.toFixed(1);
+    const pct = (D.into / D.per) * 100;
+    const mScore = clamp(Math.round(num(D.mirror.score)), 0, 5);
+    const mirror = '<div class="mirror">MIRROR<i>' + "◉◉◉◉◉".slice(0, mScore) + "○○○○○".slice(0, 5 - mScore) + "</i>" + (D.mirror.date || D.mirror.score ? mScore + "/5" : "not run") + "</div>";
+
+    const hero = '<div class="hero">' +
+      '<div class="avbox">' + avatar(D.ar.look, D.ar.equipped, { cls: D.strongest && D.strongest[0], label: (s.player || "Operative") + " avatar" }) + "</div>" +
+      '<div><h1 class="glitch" data-text="' + esc(s.player || "Unnamed") + '">' + esc(s.player || "Unnamed") + "</h1>" +
+        '<div class="tags"><span class="tag tier">' + tierFor(D.level) + '</span><span class="tag cls">' + esc(D.cls[0]) + "</span>" +
+        (D.prestige ? '<span class="tag star">' + (D.prestige > 5 ? "★×" + D.prestige : "★★★★★".slice(0, D.prestige)) + " Prestige " + D.prestige + "</span>" : "") + "</div>" +
+        '<div class="xpline"><div class="xpmeta"><span>' + (D.prestige ? D.season.toLocaleString() + " season · " : "") + D.xp.toLocaleString() + " lifetime XP</span><span>" + D.into + " / " + D.per + " → LVL " + (D.level + 1) + "</span></div>" + bar(pct, "seg") + "</div></div>" +
+      '<div class="ringbox" id="ring"></div>' +
+      '<div class="scorebox"><div class="kv">Power Score</div><div class="score">' + score.toFixed(1) + '<small> / 10</small></div><div class="delta ' + dcls + '">' + dtxt + "</div>" + mirror +
+        '<div class="credits">' + D.credits.toLocaleString() + "<small>CREDITS</small></div></div></div>";
+
+    const tl = TREES.map(t => {
+      const dorm = D.dormant(t[0]), v = num(D.trees[t[0]]);
+      return '<div class="tl' + (dorm ? " dormant" : t === D.weakest ? " weak" : t === D.strongest ? " top" : "") + '"><span class="nm">' + t[1] + '</span><span class="v">' + (dorm ? "DORMANT" : v.toFixed(1)) + "</span>" + bar(dorm ? 0 : v * 10) + "</div>";
+    }).join("");
+
+    const quests = Array.isArray(s.quests) ? s.quests : [];
+    const qHtml = QTYPES.map(qt => {
+      const list = quests.filter(q => (q.type || "main") === qt[0]);
+      if (!list.length) return "";
+      return '<div class="qgroup"><div class="qlabel">' + qt[1] + "</div>" + list.map(q => {
+        const total = Math.max(1, num(q.total, 1)), done = clamp(num(q.done), 0, total);
+        let st = String(q.status || "active").toLowerCase();
+        if (st === "complete" || st === "completed") st = "done";
+        return '<div class="quest ' + esc(qt[0]) + " " + esc(st) + '"><div class="qtop"><div><span class="qid">' + esc(q.id) + '</span><span class="qtitle">' + esc(q.title) + "</span></div>" +
+          '<span class="qreward">' + esc(q.reward) + "</span></div>" + (q.criteria ? '<div class="qcrit">' + esc(q.criteria) + "</div>" : "") +
+          '<div class="qprog">' + bar((done / total) * 100) + "<span>" + (st === "done" ? "COMPLETE" : st === "locked" ? "LOCKED" : done + "/" + total) + "</span></div></div>";
+      }).join("") + "</div>";
+    }).join("") || '<p class="empty">No quests yet. Ask your game master for a Quest Board.</p>';
+
+    const p = s.platform || {}, inUse = Array.isArray(p.in_use) ? p.in_use : [], avail = clamp(Math.round(num(p.available, 10)), 1, 10);
+    const plat = p.app && (inUse.length || (p.next || []).length)
+      ? '<div class="plat"><div class="chart" id="cov"></div><div><div class="plat-app">' + esc(p.app) + (p.plan ? " · " + esc(p.plan) : "") + "</div>" +
+        (inUse.length ? '<div class="chips">' + inUse.map(f => '<span class="chip">' + esc(f) + "</span>").join("") + "</div>" : "") + "</div></div>" +
+        ((p.next || []).length ? '<ul class="unlocks">' + p.next.slice(0, 3).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul>" : "")
+      : '<p class="empty">' + (p.app ? esc(p.app) + ": not scanned yet. " : "") + "Type <b>Maximization</b> in your AI chat to scan which features you use.</p>";
+
+    const log = (s.log || []).slice(0, 8).map(l => '<li><span class="d">' + esc(l.date) + "</span><span>" + esc(l.event) + (l.ev ? '<span class="ev">' + esc(l.ev) + "</span>" : "") +
+      '</span><span class="x">+' + num(l.xp) + " XP</span></li>").join("") || '<li class="empty">No completions logged yet.</li>';
+
+    const tracks = TRACKS.map(t => {
+      const c = Math.max(0, num(D.counts[t[0]])), th = t[3], r = D.ranks[t[0]];
+      const next = r < 4 ? th[r] : null, prv = r ? th[r - 1] : 0;
+      return '<div class="track"><div class="track-top"><b>' + t[1] + '</b><span class="rank r' + r + '">' + RANKS[r] + "</span></div>" +
+        '<div class="sub">' + c + " " + t[2] + (next == null ? " · max rank" : " · " + RANKS[r + 1] + " at " + next) + "</div>" + bar(next == null ? 100 : ((c - prv) / (next - prv)) * 100) + "</div>";
+    }).join("");
+    const ins = TIERS.map(t => '<span class="ins' + (D.prestige > 0 || D.level >= t[0] ? " on" : "") + '">' + t[1] + "</span>").join("") +
+      (D.prestige ? d3.range(Math.min(D.prestige, 10)).map(k => '<span class="ins prestige on">Prestige ' + (k + 1) + "</span>").join("") : '<span class="ins prestige">Prestige 1</span>');
+    const known = BADGES.map(b => b[0]);
+    const custom = Object.keys(D.earned).filter(n => known.indexOf(n) < 0).map(n => [n, "Custom badge"]);
+    const badges = BADGES.concat(custom).map(b => {
+      const e = D.earned[b[0]];
+      return '<div class="badge' + (e ? "" : " locked") + '">' + badgeIcon(!!e) + "<b>" + esc(b[0]) + "</b><span>" + (e ? esc(e.date || "Earned") + (e.ev ? " · " + esc(e.ev) : "") : esc(b[1])) + "</span></div>";
+    }).join("");
+
+    return '<div class="grid">' +
+      panel("s12 hot", "", "", hero) +
+      panel("s7", "Skill Matrix", (TREES.length - TREES.filter(t => D.dormant(t[0])).length) + "/8 active", '<div class="matrix"><div class="chart" id="radar"></div><div class="tlist">' + tl + "</div></div>") +
+      panel("s5", "Mission Directive", "", '<div class="directive obstacle"><h3>Biggest obstacle</h3>' + (esc(s.obstacle) || '<span class="empty">Not assessed yet.</span>') + "</div>" +
+        '<div class="directive"><h3>Next action</h3>' + (esc(s.next_action) || '<span class="empty">Ask for a Status Report.</span>') + "</div>" +
+        '<div class="ph sub2"><h2>Score history</h2></div><div class="chart" id="hist"></div>') +
+      panel("s7", "Active Operations", quests.filter(q => String(q.status || "active") === "active").length + " active", qHtml) +
+      '<div class="s5 stack">' + panel("", "Platform Maximization", "", plat) + panel("", "Mission Log", "", '<ul class="log">' + log + "</ul>") + "</div>" +
+      panel("s12", "Rank Insignia", "", '<div class="insignia">' + ins + "</div>" +
+        '<div class="ph"><h2>Milestone Tracks</h2></div><div class="tracks">' + tracks + "</div>" +
+        '<div class="ph"><h2>Badges</h2><span class="meta">' + Object.keys(D.earned).length + " earned</span></div><div class=\"badges\">" + badges + "</div>") +
+      "</div>";
+  }
+
+  function operativeView(s, D) {
+    const a = D.ar, L = a.look;
+    const sw = (key, list, label) => '<div><div class="k">' + label + '</div><div class="sw">' + list.map((col, i) =>
+      '<button type="button" data-look="' + key + '" data-val="' + i + '" aria-pressed="' + (L[key] === i) + '" aria-label="' + label + " " + (i + 1) + '" style="background:' + col + '"></button>').join("") + "</div></div>";
+    const styles = '<div><div class="k">Hair</div><div class="sw">' + STYLES.map(st =>
+      '<button type="button" class="txt" data-look="hair" data-val="' + st[0] + '" aria-pressed="' + (L.hair === st[0]) + '">' + st[1] + "</button>").join("") + "</div></div>";
+    const slots = SLOTS.map(sl => {
+      const it = ITEM[a.equipped[sl[0]]];
+      return '<div class="slot"><div class="k">' + sl[1] + '</div><div class="v' + (it ? "" : " none") + '">' + (it ? esc(it.name) : "Empty") + "</div>" +
+        (it ? '<div class="row" style="margin-top:8px"><button type="button" data-unequip="' + sl[0] + '">Unequip</button></div>' : "") + "</div>";
+    }).join("");
+    const key = D.strongest ? D.strongest[0] : "curiosity";
+    const stage = panel("stage hot", "Operative", esc(D.cls[0]), avatar(L, a.equipped, { cls: key, label: (s.player || "Operative") + " avatar" }) +
+      '<div class="stage-cap"><div class="nm">' + esc(s.player || "Unnamed") + '</div><div class="ds">' + tierFor(D.level) + " · Level " + D.level + " · " + D.credits.toLocaleString() + " credits</div></div>");
+    return '<div class="bay">' + stage + '<div class="stack">' +
+      panel("", "Class", "", '<div class="classcard">' + classIcon(key, "#ff2bd6") + "<div><b>" + esc(D.cls[0]) + "</b><p>" + esc(D.cls[1]) +
+        " Your class comes from your strongest tree" + (D.strongest ? " (" + esc(D.strongest[1]) + ")" : "") + ", so it changes as you grow.</p></div></div>") +
+      panel("", "Loadout", Object.keys(a.equipped).filter(k => a.equipped[k]).length + "/" + SLOTS.length + " slots", '<div class="slots">' + slots + '</div><div class="row"><button class="hot" type="button" data-view="armory">Open Armory</button></div>') +
+      panel("", "Appearance", "free", '<div class="look">' + sw("skin", SKINS, "Skin") + styles + sw("hair_color", HAIRS, "Hair color") + sw("accent", ACCENTS, "Neon accent") + "</div>") +
+      "</div></div>";
+  }
+
+  function armoryView(s, D) {
+    const a = D.ar;
+    const list = filter === "perks" ? [] : ITEMS.filter(it => filter === "all" || it.slot === filter);
+    const sel = ITEM[preview] || null;
+    const eq = Object.assign({}, a.equipped);
+    if (sel) eq[sel.slot] = sel.id;
+    const key = D.strongest ? D.strongest[0] : "curiosity";
+    let detail = '<p class="empty" style="margin-top:14px">Pick an item to try it on.</p>';
+    if (sel) {
+      const own = owns(sel, D), on = a.equipped[sel.slot] === sel.id, short = (sel.price || 0) - D.credits;
+      let btn;
+      if (sel.need && !own) btn = '<button type="button" disabled>Locked · ' + esc(needText(sel.need)) + "</button>";
+      else if (own) btn = on ? '<button type="button" data-unequip="' + sel.slot + '">Unequip</button>' : '<button class="primary" type="button" data-equip="' + sel.id + '">Equip</button>';
+      else btn = '<button class="buy" type="button" data-buy="' + sel.id + '"' + (short > 0 ? " disabled" : "") + ">Buy · " + sel.price.toLocaleString() + " CR</button>" +
+        (short > 0 ? '<span class="empty">' + short.toLocaleString() + " more credits needed</span>" : "");
+      detail = '<div class="detail"><div class="nm">' + esc(sel.name) + '</div><span class="rr rar-' + rarity(sel) + '" style="color:var(--rc);font:700 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase">' +
+        rarity(sel) + " · " + SLOTS.find(x => x[0] === sel.slot)[1] + "</span><p>" + esc(sel.d) + '</p><div class="row">' + btn + "</div></div>";
+    }
+    const stage = panel("stage hot", "Fitting Room", D.credits.toLocaleString() + " CR", avatar(a.look, eq, { cls: key, label: "Avatar preview" }) + detail);
+    const filt = '<div class="filters">' + [["all", "All"]].concat(SLOTS, [["perks", "Perks"]]).map(f =>
+      '<button type="button" data-filter="' + f[0] + '" aria-pressed="' + (filter === f[0]) + '">' + f[1] + "</button>").join("") + "</div>";
+    const cards = list.map(it => {
+      const own = owns(it, D), on = a.equipped[it.slot] === it.id, lock = it.need && !own;
+      const st = on ? '<span class="st eq">EQUIPPED</span>' : own ? '<span class="st own">' + (it.need ? "EARNED" : "OWNED") + "</span>" :
+        lock ? '<span class="st lock">🔒 ' + esc(needText(it.need)) + "</span>" : '<span class="st">' + it.price.toLocaleString() + " CR</span>";
+      const th = {}; th[it.slot] = it.id;
+      return '<button type="button" class="item rar-' + rarity(it) + (lock ? " locked" : "") + '" data-preview="' + it.id + '" aria-pressed="' + (preview === it.id) + '">' +
+        '<span class="th">' + avatar(a.look, th, { still: true, label: it.name }) + '</span><span class="body"><span class="nm">' + esc(it.name) + '</span><span class="rr">' + rarity(it) + "</span>" + st + "</span></button>";
+    }).join("");
+    const perks = filter === "all" || filter === "perks" ? '<div class="ph sub2"><h2>Perks</h2><span class="meta">play-style boosts, never XP</span></div><div class="perks">' + PERKS.map(pk => {
+      const have = Math.max(0, Math.floor(num(a.perks[pk.id])));
+      return '<div class="perk"><b>' + esc(pk.name) + "</b><p>" + esc(pk.d) + '</p><div class="use">Use it in your AI chat: <code>Use Perk: ' + esc(pk.name) + "</code></div>" +
+        '<div class="row" style="margin-top:0"><button class="buy" type="button" data-perk="' + pk.id + '"' + (D.credits < pk.price ? " disabled" : "") + ">Buy · " + pk.price + " CR</button>" +
+        (have ? '<span class="ct">× ' + have + " owned</span>" : "") + "</div></div>";
+    }).join("") + "</div>" : "";
+    return '<div class="bay">' + stage + panel("", "Armory", "Credits = lifetime XP − spent", filt + (cards ? '<div class="items">' + cards + "</div>" : "") + perks) + "</div>";
+  }
+
+  function syncBar() {
+    return '<div class="sync' + (dirty ? " on" : "") + '" id="sync">' + panel("hot", "", "", '<p><b>Loadout changed.</b> Send the new save code to your AI with <code>Load Game:</code> so your game master keeps your gear.</p>' +
+      '<div class="row" style="margin:0"><button class="hot" type="button" id="copy">Copy save code</button><span class="ok" id="copied" hidden>COPIED</span></div>' +
+      '<textarea id="codeout" readonly hidden spellcheck="false"></textarea>') + "</div>";
+  }
+
+  function render() {
+    const D = derive(S);
+    // First visit to the armory: equip any gear already earned.
+    if (D.ar.fresh) {
+      delete D.ar.fresh;
+      ITEMS.forEach(it => { if (it.need && unlocked(it, D) && !D.ar.equipped[it.slot]) D.ar.equipped[it.slot] = it.id; });
+    }
+    ticker(S, D);
+    const body = view === "operative" ? operativeView(S, D) : view === "armory" ? armoryView(S, D) : commandView(S, D);
+    app.innerHTML = topbar(D) + body + syncBar() +
+      '<p class="foot">AI Level Up · <a href="https://github.com/pflan77/ai-level-up">github.com/pflan77/ai-level-up</a> · Your save code stays in this browser.</p>';
+    if (view === "command") {
+      drawRing(document.getElementById("ring"), (D.into / D.per) * 100, D.level);
+      drawRadar(document.getElementById("radar"), D);
+      drawHistory(document.getElementById("hist"), S.history);
+      const cov = document.getElementById("cov");
+      if (cov) { const p = S.platform || {}; drawCoverage(cov, (p.in_use || []).length, clamp(Math.round(num(p.available, 10)), 1, 10)); }
+    }
+    wire(D);
+  }
+
+  function changed() { dirty = true; store(STORE_KEY, JSON.stringify(S)); render(); }
+
+  function wire(D) {
+    const a = D.ar;
+    app.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { view = b.dataset.view; store(TAB_KEY, view); render(); window.scrollTo(0, 0); });
+    app.querySelectorAll("[data-filter]").forEach(b => b.onclick = () => { filter = b.dataset.filter; render(); });
+    app.querySelectorAll("[data-preview]").forEach(b => b.onclick = () => { preview = b.dataset.preview; render(); });
+    app.querySelectorAll("[data-equip]").forEach(b => b.onclick = () => { const it = ITEM[b.dataset.equip]; a.equipped[it.slot] = it.id; changed(); });
+    app.querySelectorAll("[data-unequip]").forEach(b => b.onclick = () => { delete a.equipped[b.dataset.unequip]; changed(); });
+    app.querySelectorAll("[data-buy]").forEach(b => b.onclick = () => {
+      const it = ITEM[b.dataset.buy];
+      if (!it || it.need || owns(it, D) || D.credits < it.price) return;
+      a.spent += it.price; a.owned.push(it.id); a.equipped[it.slot] = it.id; changed();
+    });
+    app.querySelectorAll("[data-perk]").forEach(b => b.onclick = () => {
+      const pk = PERKS.find(x => x.id === b.dataset.perk);
+      if (!pk || D.credits < pk.price) return;
+      a.spent += pk.price; a.perks[pk.id] = Math.max(0, Math.floor(num(a.perks[pk.id]))) + 1; changed();
+    });
+    app.querySelectorAll("[data-look]").forEach(b => b.onclick = () => {
+      const k = b.dataset.look; a.look[k] = k === "hair" ? b.dataset.val : Number(b.dataset.val); changed();
+    });
+    const swap = document.getElementById("swap");
+    if (swap) swap.onclick = () => showLoader("");
+    const copy = document.getElementById("copy");
+    if (copy) copy.onclick = () => {
+      const code = JSON.stringify(S), out = document.getElementById("codeout"), ok = document.getElementById("copied");
+      out.value = code; out.hidden = false;
+      const done = () => { ok.hidden = false; };
+      const fallback = () => { out.select(); try { if (document.execCommand("copy")) done(); } catch (e) { /* user copies by hand */ } };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, fallback); else fallback();
+    };
+  }
+
+  function showLoader(prefill, error) {
+    document.getElementById("ticker").innerHTML = "";
+    app.innerHTML =
+      '<div class="loader"><span class="eyebrow">AI Level Up // Command Center</span>' +
+      '<h1 class="glitch" data-text="Jack in">Jack in</h1>' +
+      "<p>In your AI chat, type <b>Save Game</b>. Copy the line of JSON it prints and paste it here. Nothing is uploaded; it stays in this browser.</p>" +
+      '<label for="code" class="eyebrow" style="color:var(--muted);display:block;margin-bottom:8px">Save code</label>' +
+      '<textarea id="code" spellcheck="false" placeholder=\'{"v":2,"player":"...","xp":0, ...}\'>' + esc(prefill) + "</textarea>" +
+      '<div class="row"><button class="primary" id="load" type="button">Open command center</button>' +
+      '<button id="demo" type="button">Try a demo</button><button id="elite" type="button">Elite demo (Prestige 2)</button>' +
+      (error ? '<span class="err" role="alert">' + esc(error) + "</span>" : "") + "</div></div>";
+    document.getElementById("load").onclick = () => {
+      const text = document.getElementById("code").value;
+      try {
+        const s = parse(text);
+        if (!s) return showLoader(text, "Paste a save code first.");
+        start(s, true);
+      } catch (e) { showLoader(text, e.message); }
+    };
+    document.getElementById("demo").onclick = () => start(JSON.parse(JSON.stringify(DEMO)), false);
+    document.getElementById("elite").onclick = () => start(JSON.parse(JSON.stringify(ELITE)), false);
+  }
+
+  function start(s, save) {
+    S = s; dirty = false; preview = null;
+    if (save) store(STORE_KEY, JSON.stringify(S));
+    render();
+  }
+
+  // Start: embedded state first (keeping newer gear from this browser), then the last save used here, then the loader.
+  const saved = store(TAB_KEY);
+  if (saved === "operative" || saved === "armory") view = saved;
+  let s0 = null, local = null;
+  try { local = parse(store(STORE_KEY)); } catch (e) { /* ignore a bad stored save */ }
+  try { s0 = parse(document.getElementById("ailu-state").textContent); } catch (e) { /* fall back */ }
+  if (s0 && local && local.player === s0.player && local.armory && num(local.armory.spent) >= num((s0.armory || {}).spent)) s0.armory = local.armory;
+  s0 = s0 || local;
+  if (s0) start(s0, false); else showLoader("");
+})();
+</script>
+</body>
+</html>

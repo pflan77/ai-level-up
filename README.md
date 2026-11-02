@@ -2,7 +2,7 @@
 
 **Level up how you use AI, and prove it.**
 
-AI Level Up turns any AI chatbot into a game master that tracks your growth from casual AI user to AI systems operator. You earn XP for things you actually finish and ship, level up through six tiers, build eight skill trees, take on quests built around your own projects, fight boss battles aimed at your weakest skills, earn milestone badges, and keep climbing with Prestige once you max out.
+AI Level Up turns any AI chatbot into a game master that tracks your growth from casual AI user to AI systems operator. You earn XP for things you actually finish and ship, level up through six tiers, build eight skill trees, take on quests built around your own projects, fight boss battles aimed at your weakest skills, earn milestone badges, and keep climbing with Prestige once you max out. Your XP also earns credits you spend in the Armory on gear for your cyberpunk avatar.
 
 It is built to be hard to cheat. Plans earn nothing, vague claims earn nothing, and your skill score only moves when you show evidence.
 
@@ -16,7 +16,9 @@ Works with ChatGPT, Claude, Gemini, Grok, Copilot, Llama, Mistral, or any model 
 |---|---|
 | `AI_LEVEL_UP_PROMPT.md` | **The game.** One prompt for any model. Under 8,000 characters, so it fits a Custom GPT. |
 | `MAXIMIZATION.md` | Optional field guide for the Maximization scan: the 10 feature areas and where they live in each AI app. Add it as a knowledge file for a sharper audit. |
-| `dashboard.html` | Your command center. Open it in any browser, paste your save code, see everything at a glance. |
+| `dashboard.html` | Your command center and Armory. Open it in any browser, paste your save code, see everything at a glance and gear up your avatar. Works offline. |
+| `dashboard/` | The dashboard's source and its D3 charting library. Edit here, then run `python3 build.py`. |
+| `build.py` | Builds `dashboard.html` and the skill zip. |
 | `skill/ai-level-up/` | A Claude skill version that saves your progress to a file automatically. |
 | `ai-level-up-skill.zip` | The same skill, zipped for upload. |
 | `tests/` | A 10-turn playtest script to check the game in any model, plus an automated version for local models. |
@@ -69,6 +71,7 @@ Paste the prompt as the system prompt or custom instructions. If the model has n
 | `Dashboard` | Your visual command center (see below) |
 | `Save Game` | Prints your save code |
 | `Load Game: …` | Paste a save code to pick up where you left off |
+| `Use Perk: …` | Spend a perk you bought in the Armory, such as `Use Perk: Quest Reroll` |
 | `Recalibrate` | Re-score your skills from evidence (once a month) |
 | `Prestige` | Reset your level for a Prestige star once you hit Level 30 with a 9.0+ score (optional) |
 
@@ -105,11 +108,13 @@ Every Status Report opens with a text HUD that works in any chat:
 ╚═══════════════════════════════════════════════╝
 ```
 
-For the full visual version, type **`Dashboard`**:
+For the full visual version, open [`dashboard.html`](dashboard.html) in a browser, paste your save code, and click **Open command center**. Click **Try a demo** to see a new player, or **Elite demo** to see a Prestige 2 player. It's one file with no outside requests, so it works offline and your save code never leaves your browser. The Claude skill fills it in with your record and opens it for you.
 
-- **Claude** (Artifacts), **ChatGPT** and **Gemini** (Canvas): the game builds a visual command center right in the chat, with your level ring, XP bar, skill trees, quest cards, milestone tracks, rank insignia, badges and score history.
-- **Any model:** open [`dashboard.html`](dashboard.html) in a browser, paste your save code, and click **Open command center**. Click **Try a demo** to see a new player, or **Elite demo** to see a Prestige 2 player. Your save code never leaves your browser.
-- **Claude skill:** the skill fills in the same dashboard with your record and opens it for you.
+It has three tabs:
+
+- **Command:** your avatar, level ring, XP and credits, a D3 skill-matrix radar of all eight trees, score history, quests, Maximization coverage, mission log, milestone tracks, insignia and badges.
+- **Operative:** your avatar, your class (from your strongest skill tree), your loadout, and free appearance options: skin, hair, hair color and neon accent.
+- **Armory:** try on and buy gear, and buy perks (see below).
 
 ---
 
@@ -169,6 +174,19 @@ Above a 9.5 skill score, only impact on others moves the number: people using yo
 
 ---
 
+## Armory
+
+Every XP you earn also earns a **credit**. Spend credits in the dashboard's Armory. Your XP and level never go down when you buy something.
+
+- **Gear is cosmetic:** 37 items across 7 slots (headgear, optics, armor, outerwear, cyberware, companion, backdrop), from 150-credit common items to 5,000-credit legendaries.
+- **Some gear can't be bought.** It's earned: the Builder Harness at Level 5, the Signal Drone for your first published work, the Mirror Lens for a 5/5 Mirror Test, the Slayer Scar for your first Boss Battle win, the Vanguard Halo for Prestige.
+- **Perks change how you play, never your XP or score:** Quest Reroll (100), Overclock for one extra Daily Quest (250), Streak Shield for one rest week (300), Early Recalibrate (500). Use one in your AI chat with `Use Perk: [name]`.
+- **Your class** comes from your strongest skill tree: Scout, Whisperer, Netrunner, Sentinel, Fixer, Mentor, Technomancer or Courier. It changes as you grow.
+
+Purchases are stored in the `armory` part of your save code. After you buy something, click **Copy save code** in the dashboard and send it to your AI with `Load Game:`, so your game master keeps your gear.
+
+---
+
 ## Mirror Test
 
 How well does your AI actually know you? Type **`Mirror Test`** in a fresh chat. The AI answers 5 questions about you using only what it has saved (memory, custom instructions, project files): your role, audience, goals, voice and style, and current projects. You mark each answer right or wrong.
@@ -209,7 +227,7 @@ Workshop facilitators can use this as a cohort game:
 
 ## Customizing
 
-The prompt is plain text. Edit the XP table, rename the tiers, or add badges for your team or community. If you share a modified version, keep the Prime Directives. They're what stop the game from rewarding plans over results.
+The prompt is plain text. Edit the XP table, rename the tiers, or add badges for your team or community. To change the gear, perks or prices, edit the catalog in `dashboard/dashboard.src.html` and run `python3 build.py`. If you share a modified version, keep the Prime Directives. They're what stop the game from rewarding plans over results.
 
 ---
 
